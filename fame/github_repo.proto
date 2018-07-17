@@ -1,0 +1,29 @@
+// Copyright 2018 Sourcerer, Inc.
+// Author: Sergey Surkov (sergey@sourcerer.io)
+
+syntax = "proto3";
+
+message Commit {
+  string sha = 1;
+  string timestamp = 2;
+  string username = 3;
+}
+
+message TopCoder {
+  string username = 1;
+  int32 num_commits = 2;
+}
+
+message Repo {
+  string owner = 1;
+  string name = 2;
+
+  // Person whose token is used to call GitHub API.
+  string user = 3;  
+
+  // Top contributors. Useful when there is no action.
+  repeated TopCoder top_contributors = 4; 
+
+  // Commits for at least the last week.
+  repeated Commit recent_commits = 5;
+}

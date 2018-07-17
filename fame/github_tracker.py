@@ -4,7 +4,7 @@ __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from os import path
 
 import dateparser
@@ -97,33 +97,27 @@ class RepoTracker:
 
     def update(self):
         repo = self.load()
-        last_known = repo.commits[0].sha if repo.recent_commits else None
+        last_known = repo.recent_commits[0].sha if repo.recent_commits else None
 
         github = Github()  # TODO(sergey): Provide user's token here.
         gh_repo = github.get_repo('%s/%s' % (self.owner, self.repo)) 
 
         # Get latest commits.
         commits = []
-        now = datetime.now(timezone.utc)
-        for c in gh_repo.get_commits():
+        now = datetime.utcnow()
+        since = now - timedelta(days=7)
+        for c in gh_repo.get_commits(since=since):
             if c.sha == last_known:
                 break
 
-            commit = proto.Commit(
-                sha=c.sha, timestamp=c.last_modified, username=c.author.login)
+            commit = proto.Commit(sha=c.sha,
+                                  timestamp=c.commit.author.date.isoformat(),
+                                  username=c.author.login)
             commits.append(commit)
-
-            last_modified = dateparser.parse(c.last_modified)
-            if (now - last_modified).days >= 7:
-                # We don't need anything older than one week.
-                break
 
         # We need to keep just last week's worth of commits.
         commits.extend(repo.recent_commits)
-        while len(commits) > 1:  # We always want at least one commit.
-            timestamp = dateparser.parse(commits[-1].timestamp) 
-            if (now - timestamp).days < 7:
-                break
+        while dateparser.parse(commits[-1].timestamp) < since:
             commits.pop()
 
         while repo.recent_commits:

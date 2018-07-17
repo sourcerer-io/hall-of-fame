@@ -5,6 +5,7 @@ Commands
     remove: Deletes a tracked repo.
     list: Lists all tracked repos.
     update: Updates a repo.
+    print: Prints a tracked repo.
 """
 
 __copyright__ = '2018 Sourcerer, Inc.'
@@ -17,13 +18,13 @@ from fame.github_tracker import RepoTracker, TrackerError
 
 
 def is_repo_command(command):
-    return command in ['add', 'remove', 'update']
+    return command in ['add', 'remove', 'update', 'print']
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('command', type=str,
-                        choices=['add', 'remove', 'list', 'update'],
+                        choices=['add', 'remove', 'list', 'update', 'print'],
                         help='Command to execute')
     parser.add_argument('--user', type=str,
                         help='Github user that tracks a repo')
@@ -66,6 +67,9 @@ def main():
         elif args.command == 'list':
             for user, owner, repo in tracker.list():
                 print('%s:%s/%s' % (user, owner, repo))
+        elif args.command == 'print':
+            repo = tracker.load()
+            print(repo)
     except TrackerError as e:
         print('e %s' % str(e))
 

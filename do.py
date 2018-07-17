@@ -18,7 +18,23 @@ def parse_args():
     parser.add_argument('command', type=str,
                         choices=['add', 'delete', 'list', 'update'],
                         help='Command to execute')
-    parser.parse_args()
+    parser.add_argument('--manager', type=str,
+                        help='Github user that tracks a repo')
+    parser.add_argument('--owner', type=str,
+                        help='Github user that owns a repo')
+    parser.add_argument('--repo', type=str,
+                        help='Github repo name, excluding owner')
+    args = parser.parse_args()
+
+    if args.command in ['add', 'delete', 'update']:
+        if not args.manager:
+            parser.error('Must provide repo manager')
+        if not args.owner:
+            parser.error('Must provide repo owner')
+        if not args.repo:
+            parser.error('Must provide repo name')
+
+    return args
 
 
 def main():

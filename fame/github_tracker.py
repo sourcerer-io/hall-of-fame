@@ -112,7 +112,8 @@ class RepoTracker:
 
             commit = proto.Commit(sha=c.sha,
                                   timestamp=c.commit.author.date.isoformat(),
-                                  username=c.author.login)
+                                  username=c.author.login,
+                                  avatar_url=c.author.avatar_url)
             commits.append(commit)
 
         # We need to keep just last week's worth of commits.
@@ -120,7 +121,7 @@ class RepoTracker:
         while dateparser.parse(commits[-1].timestamp) < since:
             commits.pop()
 
-        while repo.recent_commits:
-            repo.recent_commits.pop()
+        repo.ClearField('recent_commits')
         repo.recent_commits.extend(commits)
+
         self.save(repo)

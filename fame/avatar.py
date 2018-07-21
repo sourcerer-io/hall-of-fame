@@ -31,7 +31,14 @@ class AvatarAdorner:
         </clipPath>
       </defs>
       <g clip-path="url(#badge-clip)">
-        <rect width="100%" height="100%" fill="#777777"/>
+        <rect width="{label_w}" height="100%" fill="#777777"/>
+        <rect x="{label_w}" width="{count_w}" height="100%"
+            fill="{count_color}"/> 
+      </g>
+      <g text-anchor="middle" font-size="28" fill="#ffffff"
+          font-family="Roboto,DejaVu Sans,Verdana,Geneva,sans-serif">
+        <text x="{label_x}" y="{label_y}">{label_text}</text>
+        <text x="{count_x}" y="{count_y}">{count_text}</text>
       </g>
     </svg>"""
 
@@ -51,7 +58,7 @@ class AvatarAdorner:
         self.badge = badge
         self.badge_count = count
 
-        self._init_sizes()
+        self._init_sizes_and_colors()
         self._nest_svg()
         self._estimate_badge_size()
         self._make_space_for_badge()
@@ -60,11 +67,15 @@ class AvatarAdorner:
     def get_avatar_svg(self):
         return ElementTree.tostring(self.svg, encoding='unicode')
 
-    def _init_sizes(self):
+    def _init_sizes_and_colors(self):
         view_box = self.svg.get('viewBox')
         if not view_box:
             raise RenderingException('No viewBox found')
         _, _, self.face_w, self.face_h = map(float, view_box.split(' '))
+
+        count_colors = {
+            'new': '#4CB04F', 'trending': '#2B95CF', 'top': '#F28F56' }
+        self.count_color = count_colors[self.badge]
 
     def _nest_svg(self):
         """Puts the input SVG under a nested SVG tag."""
@@ -79,10 +90,10 @@ class AvatarAdorner:
 
     def _estimate_badge_size(self):
         # All sizes are relative units.
-        label_widths = { 'top': 50, 'new': 50, 'trending': 120 }
-        self.badge_count_w = 40
+        label_widths = { 'top': 70, 'new': 70, 'trending': 128 }
+        self.badge_count_w = len(str(self.badge_count)) * 18 + 16
         self.badge_w = label_widths[self.badge] + self.badge_count_w
-        self.badge_h = 32
+        self.badge_h = 40
         self.badge_off = 5
 
     def _make_space_for_badge(self):
@@ -113,7 +124,15 @@ class AvatarAdorner:
 
     def _attach_badge(self):
         svg_badge = AvatarAdorner.SVG_BADGE.format(
-           badge_w=self.badge_w, badge_h=self.badge_h)
+           badge_w=self.badge_w, badge_h=self.badge_h,
+           label_w=(self.badge_w - self.badge_count_w),
+           label_x=(self.badge_w - self.badge_count_w) / 2,
+           label_y=self.badge_h - 12,
+           label_text=self.badge,
+           count_x=self.badge_w - self.badge_count_w / 2,
+           count_y=self.badge_h - 12,
+           count_w=self.badge_count_w,
+           count_text=str(self.badge_count), count_color=self.count_color)
         self.badge_svg = ElementTree.fromstring(svg_badge)
         self.svg.append(self.badge_svg)
 
@@ -125,7 +144,6 @@ class AvatarAdorner:
         self.badge_svg.set('height', '%.02f' % self.badge_h)
         self.badge_svg.set(
             'viewBox', '0 0 %.02f %.02f' % (self.badge_w, self.badge_h))
-
 
 def register_svg_namespaces():
     """Some global initiaization."""

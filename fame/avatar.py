@@ -4,14 +4,20 @@ __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
 import re
+from urllib.request import urlopen
 from xml.etree import ElementTree
+
+
+class AvatarError(Exception):
+    def __init__(self, message):
+        super().__init__(message)
 
 
 class AvatarAdorner:
     SVG_GITHUB = """
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
         xmlns:xlink="http://www.w3.org/1999/xlink"
-        viewBox="0 0 200 200" width="64px" height="64px">
+        viewBox="0 0 200 200">
       <defs>
         <clipPath id="circle-clip">
           <circle cx="100" cy="100" r="75"/>
@@ -35,7 +41,7 @@ class AvatarAdorner:
         <rect x="{label_w}" width="{count_w}" height="100%"
             fill="{count_color}"/> 
       </g>
-      <g text-anchor="middle" font-size="28" fill="#ffffff"
+      <g text-anchor="middle" font-size="34" fill="#ffffff"
           font-family="Roboto,DejaVu Sans,Verdana,Geneva,sans-serif">
         <text x="{label_x}" y="{label_y}">{label_text}</text>
         <text x="{count_x}" y="{count_y}">{count_text}</text>
@@ -47,6 +53,11 @@ class AvatarAdorner:
         ns = {'svg': 'http://www.w3.org/2000/svg'}
         image = self.svg.find('svg:image', namespaces=ns)
         image.set('{http://www.w3.org/1999/xlink}href', github_avatar_url)
+
+    def init_with_sourcerer(self, sourcerer_avatar_url):
+        response = urlopen(sourcerer_avatar_url)
+        data = response.read()
+        self.svg = ElementTree.fromstring(data)
 
     def adorn(self, badge, count):
         """Adorns an avatar with a badge.
@@ -70,8 +81,13 @@ class AvatarAdorner:
     def _init_sizes_and_colors(self):
         view_box = self.svg.get('viewBox')
         if not view_box:
-            raise RenderingException('No viewBox found')
+            raise AvatarError('No viewBox found')
         _, _, self.face_w, self.face_h = map(float, view_box.split(' '))
+
+        # Set SVG size to something reasonable and square.
+        FACE_SIZE = '52px'
+        self.svg.set('width', FACE_SIZE)
+        self.svg.set('height', FACE_SIZE)
 
         count_colors = {
             'new': '#4CB04F', 'trending': '#2B95CF', 'top': '#F28F56' }
@@ -90,11 +106,11 @@ class AvatarAdorner:
 
     def _estimate_badge_size(self):
         # All sizes are relative units.
-        label_widths = { 'top': 70, 'new': 70, 'trending': 128 }
-        self.badge_count_w = len(str(self.badge_count)) * 18 + 16
+        label_widths = { 'top': 90, 'new': 90, 'trending': 146 }
+        self.badge_count_w = len(str(self.badge_count)) * 20 + 20
         self.badge_w = label_widths[self.badge] + self.badge_count_w
-        self.badge_h = 40
-        self.badge_off = 5
+        self.badge_h = 50
+        self.badge_off = 10
 
     def _make_space_for_badge(self):
         """Makes space in the input SVG for the badge."""
@@ -102,7 +118,7 @@ class AvatarAdorner:
 
         px_h = self.svg.get('height')
         if not px_h or not re.match(r'^\d+(\.\d+)?px$', px_h):
-            raise RenderingException('SVG height not found')
+            raise AvatarError('SVG height not found')
         px_h = float(px_h[:-2])
 
         px_h *= (h + self.badge_h + self.badge_off) / h
@@ -110,7 +126,7 @@ class AvatarAdorner:
 
         px_w = self.svg.get('width')
         if not px_w or not re.match(r'^\d+(\.\d+)?px$', px_w):
-            raise RenderingException('SVG witdh not found')
+            raise AvatarError('SVG witdh not found')
         px_w = float(px_w[:-2])
         if self.badge_w > w:
             # Badge is wider than face, center face with respect to the badge.
@@ -127,10 +143,10 @@ class AvatarAdorner:
            badge_w=self.badge_w, badge_h=self.badge_h,
            label_w=(self.badge_w - self.badge_count_w),
            label_x=(self.badge_w - self.badge_count_w) / 2,
-           label_y=self.badge_h - 12,
+           label_y=self.badge_h - 13,
            label_text=self.badge,
            count_x=self.badge_w - self.badge_count_w / 2,
-           count_y=self.badge_h - 12,
+           count_y=self.badge_h - 13,
            count_w=self.badge_count_w,
            count_text=str(self.badge_count), count_color=self.count_color)
         self.badge_svg = ElementTree.fromstring(svg_badge)
@@ -154,3 +170,11 @@ def register_svg_namespaces():
 
 
 register_svg_namespaces()
+
+
+if __name__ == '__main__':
+    ava = AvatarAdorner()
+    ava.init_with_github('https://avatars3.githubusercontent.com/u/5919088?v=4')
+    #ava.init_with_sourcerer('https://sourcerer.io/avatar/diogo-queiroz')
+    ava.adorn('new', 2)
+    open('test3.svg', 'w').write(ava.get_avatar_svg())

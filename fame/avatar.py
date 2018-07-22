@@ -3,6 +3,7 @@
 __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
+import base64
 import re
 from urllib.request import urlopen
 from xml.etree import ElementTree
@@ -50,14 +51,15 @@ class AvatarAdorner:
 
     def init_with_github(self, github_avatar_url):
         self.svg = ElementTree.fromstring(AvatarAdorner.SVG_GITHUB)
-        ns = {'svg': 'http://www.w3.org/2000/svg'}
-        image = self.svg.find('svg:image', namespaces=ns)
-        image.set('{http://www.w3.org/1999/xlink}href', github_avatar_url)
+        self._init_face_image()
+        self.face_image.set(
+            '{http://www.w3.org/1999/xlink}href', github_avatar_url)
 
     def init_with_sourcerer(self, sourcerer_avatar_url):
         response = urlopen(sourcerer_avatar_url)
         data = response.read()
         self.svg = ElementTree.fromstring(data)
+        self._init_face_image()
 
     def adorn(self, badge, count):
         """Adorns an avatar with a badge.
@@ -69,6 +71,7 @@ class AvatarAdorner:
         self.badge = badge
         self.badge_count = count
 
+        self._embed_face()
         self._init_sizes_and_colors()
         self._nest_svg()
         self._estimate_badge_size()
@@ -77,6 +80,25 @@ class AvatarAdorner:
 
     def get_avatar_svg(self):
         return ElementTree.tostring(self.svg, encoding='unicode')
+
+    def _init_face_image(self):
+        ns = {'svg': 'http://www.w3.org/2000/svg'}
+        self.face_image = self.svg.find('svg:image', namespaces=ns)
+
+    def _embed_face(self):
+        """Embeds referenced face image into the SVG.
+
+        Browsers don't display referenced images in <img>.
+        """
+        face_url = self.face_image.get('{http://www.w3.org/1999/xlink}href')
+        BASE64_HEADER = 'data:image/jpeg;base64,'
+        if face_url.startswith(BASE64_HEADER):
+            return
+
+        data = urlopen(face_url).read()
+        encoded = BASE64_HEADER + base64.b64encode(data).decode()
+        self.face_image.set('{http://www.w3.org/1999/xlink}href', encoded)
+        print('i Embedded JPEG %s' % face_url)
 
     def _init_sizes_and_colors(self):
         view_box = self.svg.get('viewBox')
@@ -174,7 +196,7 @@ register_svg_namespaces()
 
 if __name__ == '__main__':
     ava = AvatarAdorner()
-    ava.init_with_github('https://avatars3.githubusercontent.com/u/5919088?v=4')
-    #ava.init_with_sourcerer('https://sourcerer.io/avatar/diogo-queiroz')
-    ava.adorn('new', 2)
-    open('test3.svg', 'w').write(ava.get_avatar_svg())
+    #ava.init_with_github('https://avatars3.githubusercontent.com/u/5919088?v=4')
+    ava.init_with_sourcerer('https://sourcerer.io/avatar/roberth')
+    ava.adorn('trending', 24)
+    open('test2.svg', 'w').write(ava.get_avatar_svg())

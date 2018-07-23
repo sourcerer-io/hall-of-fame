@@ -21,12 +21,12 @@ class AvatarAdorner:
         viewBox="0 0 200 200">
       <defs>
         <clipPath id="circle-clip">
-          <circle cx="100" cy="100" r="75"/>
+          <circle cx="100" cy="100" r="85"/>
         </clipPath>
       </defs>
       <image clip-path="url(#circle-clip)"
           width="200" height="200" xlink:href=""/>
-      <circle cx="100" cy="100" r="85"
+      <circle cx="100" cy="100" r="95"
           stroke="#c1c5ca" stroke-width="1.5" fill="transparent" />
     </svg>"""
 
@@ -49,11 +49,11 @@ class AvatarAdorner:
       </g>
     </svg>"""
 
-    def init_with_github(self, github_avatar_url):
+    def init_with_face(self, face_url):
         self.svg = ElementTree.fromstring(AvatarAdorner.SVG_GITHUB)
         self._init_face_image()
         self.face_image.set(
-            '{http://www.w3.org/1999/xlink}href', github_avatar_url)
+            '{http://www.w3.org/1999/xlink}href', face_url)
 
     def init_with_sourcerer(self, sourcerer_avatar_url):
         response = urlopen(sourcerer_avatar_url)
@@ -96,8 +96,9 @@ class AvatarAdorner:
             return
 
         data = urlopen(face_url).read()
-        encoded = BASE64_HEADER + base64.b64encode(data).decode()
-        self.face_image.set('{http://www.w3.org/1999/xlink}href', encoded)
+        encoded = base64.b64encode(data).decode()
+        data_url = BASE64_HEADER + encoded
+        self.face_image.set('{http://www.w3.org/1999/xlink}href', data_url)
         print('i Embedded JPEG %s' % face_url)
 
     def _init_sizes_and_colors(self):
@@ -192,11 +193,3 @@ def register_svg_namespaces():
 
 
 register_svg_namespaces()
-
-
-if __name__ == '__main__':
-    ava = AvatarAdorner()
-    #ava.init_with_github('https://avatars3.githubusercontent.com/u/5919088?v=4')
-    ava.init_with_sourcerer('https://sourcerer.io/avatar/roberth')
-    ava.adorn('trending', 24)
-    open('test2.svg', 'w').write(ava.get_avatar_svg())

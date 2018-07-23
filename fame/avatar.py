@@ -4,7 +4,6 @@ __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
 import base64
-import re
 from urllib.request import urlopen
 from xml.etree import ElementTree
 
@@ -107,11 +106,6 @@ class AvatarAdorner:
             raise AvatarError('No viewBox found')
         _, _, self.face_w, self.face_h = map(float, view_box.split(' '))
 
-        # Set SVG size to something reasonable and square.
-        FACE_SIZE = '52px'
-        self.svg.set('width', FACE_SIZE)
-        self.svg.set('height', FACE_SIZE)
-
         count_colors = {
             'new': '#4CB04F', 'trending': '#2B95CF', 'top': '#F28F56' }
         self.count_color = count_colors[self.badge]
@@ -138,28 +132,14 @@ class AvatarAdorner:
     def _make_space_for_badge(self):
         """Makes space in the input SVG for the badge."""
         w, h = self.face_w, self.face_h
-
-        px_h = self.svg.get('height')
-        if not px_h or not re.match(r'^\d+(\.\d+)?px$', px_h):
-            raise AvatarError('SVG height not found')
-        px_h = float(px_h[:-2])
-
-        px_h *= (h + self.badge_h + self.badge_off) / h
         h += self.badge_h + self.badge_off
 
-        px_w = self.svg.get('width')
-        if not px_w or not re.match(r'^\d+(\.\d+)?px$', px_w):
-            raise AvatarError('SVG witdh not found')
-        px_w = float(px_w[:-2])
         if self.badge_w > w:
             # Badge is wider than face, center face with respect to the badge.
-            px_w *= self.badge_w / w
             self.face_svg.set('x', '%.02f' % ((self.badge_w - w) / 2))
             w = self.badge_w
     
         self.svg.set('viewBox', '0 0 %.02f %.02f' % (w, h))
-        self.svg.set('width', '%.02fpx' % px_w)
-        self.svg.set('height', '%.02fpx' % px_h)
 
     def _attach_badge(self):
         svg_badge = AvatarAdorner.SVG_BADGE.format(

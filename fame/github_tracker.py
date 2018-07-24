@@ -5,13 +5,14 @@ __copyright__ = '2018 Sourcerer, Inc'
 
 import json
 import os
+import re
 from datetime import datetime, timedelta, timezone
 from os import path
+from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import dateparser
 from google.protobuf import text_format
-from github import Github
 
 from . import repo_pb2 as pb
 
@@ -99,12 +100,9 @@ class RepoTracker:
 
     def update(self):
         repo = self.load()
-
-        github = Github()  # TODO(sergey): Provide user's token here.
-        github_repo = github.get_repo('%s/%s' % (self.owner, self.repo)) 
         avatars = dict(repo.avatars)
-        self._update_latest_commits(github_repo, repo, avatars)
-        self._update_top_contributors(github_repo, repo, avatars)
+        self._update_latest_commits(repo, avatars)
+        self._update_top_contributors(repo, avatars)
 
         repo.ClearField('avatars')
         for username, avatar in avatars.items():
@@ -112,21 +110,30 @@ class RepoTracker:
 
         self.save(repo)
 
-    def _update_latest_commits(self, github_repo, repo, avatars):
+    def _update_latest_commits(self, repo, avatars):
         """Makes sure repo contains 7 days worth of most recent commits."""
         last_known = repo.recent_commits[0].sha if repo.recent_commits else None
         commits = []
         now = datetime.utcnow()
         since = now - timedelta(days=7)
-        for c in github_repo.get_commits(since=since):
-            if c.sha == last_known:
+        for c in self._get_github_commits(repo.owner, repo.name, since=since):
+            if 'sha' not in c:
+                print('w GitHub commit without hash. Weird. Skipping')
+                continue
+            sha = c['sha']
+            if sha == last_known:
                 break
 
-            commit = pb.Commit(sha=c.sha,
-                               timestamp=c.commit.author.date.isoformat(),
-                               username=c.author.login)
+            try:
+                # Chop 'Z' out of the timestamp.
+                commit_date = c['commit']['author']['date'][:-1]
+                author = c['author']['login']
+                avatars[author] = c['author']['avatar_url']
+            except:
+                print('w Author, date, or avatar missing. Skipping %s' % sha)
+
+            commit = pb.Commit(sha=sha, timestamp=commit_date, username=author)
             commits.append(commit)
-            avatars[c.author.login] = c.author.avatar_url
 
         # We need to keep just last week's worth of commits.
         commits.extend(repo.recent_commits)
@@ -142,20 +149,60 @@ class RepoTracker:
             if username not in valid_users:
                 del avatars[username]
 
+    def _get_github_commits(self, owner, repo, author=None, since=None):
+        url = self._make_github_url(owner, repo, 'commits')
+        args = ['per_page=100']
+        if author:
+            args += 'author=' + author
+        if since:
+            args += 'since=' + since.isoformat()
+        if args:
+            url += '?' + '&'.join(args)
 
-    def _update_top_contributors(self, github_repo, repo, avatars):
+        last_url = None
+        while url:
+            r = self._open_github_url(url)
+            if url != last_url:
+                url, last_url = self._get_next_last_url(r.headers)
+            else:
+                url = None
+            print(url)
+            data = self._get_json(r)
+            for commit in data:
+                yield commit
+
+    def _get_next_last_url(self, headers):
+        if 'Link' not in headers:
+            return None, None
+
+        link = headers['Link']
+        matches = re.findall(r'<([^>]+)>; rel="(next|last)"', link)
+        rels = {rel: link_url for link_url, rel in matches}
+        return rels.get('next', None), rels.get('last', None)
+
+    def _update_top_contributors(self, repo, avatars):
         repo.ClearField('top_contributors')
 
-        # Yes, this is as bad as it looks, but we are making a raw request
-        # to GitHub API here, because their python wrapper is broken.
-        # TODO(sergey): Move away from the wrapper.
-        repo_id = '%s/%s' % (repo.owner, repo.name)
-        r = urlopen('https://api.github.com/repos/%s/contributors' % repo_id)
-        data = r.read().decode()
-        contributors = json.loads(data)
+        url = self._make_github_url(repo.owner, repo.name, 'contributors')
+        r = self._open_github_url(url)
+        contributors = self._get_json(r)
 
         for contrib in contributors[:5]:  # We just want top 5.
             committer = repo.top_contributors.add()
             committer.username = contrib['login']
             committer.num_commits = contrib['contributions']
             avatars[committer.username] = contrib['avatar_url']
+
+    def _make_github_url(self, owner, repo, what):
+        return 'https://api.github.com/repos/%s/%s/%s' % (owner, repo, what)
+
+    def _open_github_url(self, url):
+        try:
+            return urlopen(url)
+        except HTTPError as e:
+            print('e %s. API limit?' % e.reason)
+            raise
+
+    def _get_json(self, request):
+        data = request.read().decode()
+        return json.loads(data)

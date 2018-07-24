@@ -3,15 +3,17 @@
 __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
+import json
 import os
 from datetime import datetime, timedelta, timezone
 from os import path
+from urllib.request import urlopen
 
 import dateparser
 from google.protobuf import text_format
 from github import Github
 
-from . import github_repo_pb2 as proto
+from . import repo_pb2 as pb
 
 
 class TrackerError(Exception):
@@ -45,7 +47,7 @@ class RepoTracker:
         """
         owner_dir = path.join(self.work_dir, self.user, self.owner)
         os.makedirs(owner_dir, exist_ok=True)
-        repo = proto.Repo(
+        repo = pb.Repo(
             owner=self.owner, name=self.repo, user=self.user)
 
         repo_path = path.join(owner_dir, self.repo)
@@ -84,7 +86,7 @@ class RepoTracker:
         if not path.exists(repo_path):
             self.error('Repo not found')
         with open(repo_path) as f:
-            repo = proto.Repo()
+            repo = pb.Repo()
             text_format.Merge(f.read(), repo)
 
         return repo
@@ -97,31 +99,63 @@ class RepoTracker:
 
     def update(self):
         repo = self.load()
-        last_known = repo.recent_commits[0].sha if repo.recent_commits else None
 
         github = Github()  # TODO(sergey): Provide user's token here.
-        gh_repo = github.get_repo('%s/%s' % (self.owner, self.repo)) 
+        github_repo = github.get_repo('%s/%s' % (self.owner, self.repo)) 
+        avatars = dict(repo.avatars)
+        self._update_latest_commits(github_repo, repo, avatars)
+        self._update_top_contributors(github_repo, repo, avatars)
 
-        # Get latest commits.
+        repo.ClearField('avatars')
+        for username, avatar in avatars.items():
+            repo.avatars[username] = avatar
+
+        self.save(repo)
+
+    def _update_latest_commits(self, github_repo, repo, avatars):
+        """Makes sure repo contains 7 days worth of most recent commits."""
+        last_known = repo.recent_commits[0].sha if repo.recent_commits else None
         commits = []
         now = datetime.utcnow()
         since = now - timedelta(days=7)
-        for c in gh_repo.get_commits(since=since):
+        for c in github_repo.get_commits(since=since):
             if c.sha == last_known:
                 break
 
-            commit = proto.Commit(sha=c.sha,
-                                  timestamp=c.commit.author.date.isoformat(),
-                                  username=c.author.login,
-                                  avatar_url=c.author.avatar_url)
+            commit = pb.Commit(sha=c.sha,
+                               timestamp=c.commit.author.date.isoformat(),
+                               username=c.author.login)
             commits.append(commit)
+            avatars[c.author.login] = c.author.avatar_url
 
         # We need to keep just last week's worth of commits.
         commits.extend(repo.recent_commits)
-        while dateparser.parse(commits[-1].timestamp) < since:
+        while commits and dateparser.parse(commits[-1].timestamp) < since:
             commits.pop()
 
         repo.ClearField('recent_commits')
         repo.recent_commits.extend(commits)
 
-        self.save(repo)
+        # Remove unnecessary avatars.
+        valid_users = {c.username for c in repo.recent_commits}
+        for username in list(avatars.keys()):
+            if username not in valid_users:
+                del avatars[username]
+
+
+    def _update_top_contributors(self, github_repo, repo, avatars):
+        repo.ClearField('top_contributors')
+
+        # Yes, this is as bad as it looks, but we are making a raw request
+        # to GitHub API here, because their python wrapper is broken.
+        # TODO(sergey): Move away from the wrapper.
+        repo_id = '%s/%s' % (repo.owner, repo.name)
+        r = urlopen('https://api.github.com/repos/%s/contributors' % repo_id)
+        data = r.read().decode()
+        contributors = json.loads(data)
+
+        for contrib in contributors[:5]:  # We just want top 5.
+            committer = repo.top_contributors.add()
+            committer.username = contrib['login']
+            committer.num_commits = contrib['contributions']
+            avatars[committer.username] = contrib['avatar_url']

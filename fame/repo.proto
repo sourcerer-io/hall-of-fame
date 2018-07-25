@@ -27,7 +27,7 @@ message Repo {
   // Commits for at least the last week.
   repeated Commit recent_commits = 5;
 
-  repeated string new_users = 6;
+  repeated string new_contributors = 6;
 
   map<string, string> avatars = 7;
 }

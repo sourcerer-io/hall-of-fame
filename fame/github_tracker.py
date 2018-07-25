@@ -104,6 +104,7 @@ class RepoTracker:
         avatars = dict(repo.avatars)
         self._update_latest_commits(repo, avatars)
         self._update_top_contributors(repo, avatars)
+        self._update_new_contributors(repo)
 
         repo.ClearField('avatars')
         for username, avatar in avatars.items():
@@ -150,36 +151,6 @@ class RepoTracker:
             if username not in valid_users:
                 del avatars[username]
 
-    def _get_github_commits(self, owner, repo, author=None, since=None):
-        url = self._make_github_url(owner, repo, 'commits')
-        args = ['per_page=100']
-        if author:
-            args.append('author=' + author)
-        if since:
-            args.append('since=' + since.isoformat())
-        if args:
-            url += '?' + '&'.join(args)
-
-        last_url = None
-        while url:
-            r = self._open_github_url(url)
-            if url != last_url:
-                url, last_url = self._get_next_last_url(r.headers)
-            else:
-                url = None
-            data = self._get_json(r)
-            for commit in data:
-                yield commit
-
-    def _get_next_last_url(self, headers):
-        if 'Link' not in headers:
-            return None, None
-
-        link = headers['Link']
-        matches = re.findall(r'<([^>]+)>; rel="(next|last)"', link)
-        rels = {rel: link_url for link_url, rel in matches}
-        return rels.get('next', None), rels.get('last', None)
-
     def _update_top_contributors(self, repo, avatars):
         repo.ClearField('top_contributors')
         if repo.recent_commits:
@@ -194,6 +165,60 @@ class RepoTracker:
             committer.username = contrib['login']
             committer.num_commits = contrib['contributions']
             avatars[committer.username] = contrib['avatar_url']
+
+    def _update_new_contributors(self, repo):
+        repo.ClearField('new_contributors')
+        if not repo.recent_commits:
+            return
+
+        now = datetime.utcnow()
+        until = now - timedelta(days=7)
+        everyone = {c.username for c in repo.recent_commits}
+        new_contributors = set()
+        for username in everyone:
+            commit = next(self._get_github_commits(repo.owner, repo.name,
+                                                   author=username,
+                                                   until=until), None)
+            if not commit:
+                new_contributors.add(username)
+
+        repo.new_contributors.extend(list(new_contributors))
+
+    def _get_github_commits(self, owner, repo,
+                            author=None, since=None, until=None):
+        url = self._make_github_url(owner, repo, 'commits')
+        args = ['per_page=100']
+        if author:
+            args.append('author=' + author)
+        if since:
+            args.append('since=' + self._format_date(since))
+        if until:
+            args.append('until=' + self._format_date(until))
+        if args:
+            url += '?' + '&'.join(args)
+
+        last_url = None
+        while url:
+            r = self._open_github_url(url)
+            if url != last_url:
+                url, last_url = self._get_next_last_url(r.headers)
+            else:
+                url = None
+            data = self._get_json(r)
+            for commit in data:
+                yield commit
+
+    def _format_date(self, date):
+        return date.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    def _get_next_last_url(self, headers):
+        if 'Link' not in headers:
+            return None, None
+
+        link = headers['Link']
+        matches = re.findall(r'<([^>]+)>; rel="(next|last)"', link)
+        rels = {rel: link_url for link_url, rel in matches}
+        return rels.get('next', None), rels.get('last', None)
 
     def _make_github_url(self, owner, repo, what):
         return 'https://api.github.com/repos/%s/%s/%s' % (owner, repo, what)

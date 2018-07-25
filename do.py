@@ -34,6 +34,7 @@ def parse_args():
                         help='Github repo name, excluding owner')
     parser.add_argument('--work_dir', type=str, required=True,
                         help='Working directory to store data')
+    parser.add_argument('--token', type=str, help='Github API token')
     args = parser.parse_args()
 
     if is_repo_command(args.command):
@@ -55,7 +56,7 @@ def main():
 
     tracker = RepoTracker(args.work_dir)
     if is_repo_command(args.command):
-        tracker.configure(args.user, args.owner, args.repo)
+        tracker.configure(args.user, args.owner, args.repo, args.token)
 
     try:
         if args.command == 'add':

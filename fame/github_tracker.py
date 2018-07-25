@@ -9,7 +9,7 @@ import re
 from datetime import datetime, timedelta, timezone
 from os import path
 from urllib.error import HTTPError
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 import dateparser
 from google.protobuf import text_format
@@ -26,7 +26,7 @@ class RepoTracker:
     def __init__(self, work_dir):
         self.work_dir = work_dir
 
-    def configure(self, user, owner, repo):
+    def configure(self, user, owner, repo, github_token=None):
         """Sets tracker to a repo.
 
         Args:
@@ -37,6 +37,7 @@ class RepoTracker:
         self.user = user
         self.owner = owner
         self.repo = repo
+        self.github_token = github_token
 
     def error(self, message):
         raise TrackerError(
@@ -153,9 +154,9 @@ class RepoTracker:
         url = self._make_github_url(owner, repo, 'commits')
         args = ['per_page=100']
         if author:
-            args += 'author=' + author
+            args.append('author=' + author)
         if since:
-            args += 'since=' + since.isoformat()
+            args.append('since=' + since.isoformat())
         if args:
             url += '?' + '&'.join(args)
 
@@ -166,7 +167,6 @@ class RepoTracker:
                 url, last_url = self._get_next_last_url(r.headers)
             else:
                 url = None
-            print(url)
             data = self._get_json(r)
             for commit in data:
                 yield commit
@@ -182,6 +182,8 @@ class RepoTracker:
 
     def _update_top_contributors(self, repo, avatars):
         repo.ClearField('top_contributors')
+        if repo.recent_commits:
+            return
 
         url = self._make_github_url(repo.owner, repo.name, 'contributors')
         r = self._open_github_url(url)
@@ -198,7 +200,11 @@ class RepoTracker:
 
     def _open_github_url(self, url):
         try:
-            return urlopen(url)
+            headers = {}
+            if self.github_token:
+                headers['Authorization'] = 'token %s' % self.github_token
+            request = Request(url, None, headers=headers)
+            return urlopen(request)
         except HTTPError as e:
             print('e %s. API limit?' % e.reason)
             raise

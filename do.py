@@ -6,6 +6,7 @@ Commands
     list: Lists all tracked repos.
     update: Updates a repo.
     print: Prints a tracked repo.
+    glorify: Generate the hall of fame.
 """
 
 __copyright__ = '2018 Sourcerer, Inc.'
@@ -15,16 +16,18 @@ import argparse
 import os.path
 
 from fame.github_tracker import RepoTracker, TrackerError
+from fame.glory import Glory
 
 
 def is_repo_command(command):
-    return command in ['add', 'remove', 'update', 'print']
+    return command in ['add', 'remove', 'update', 'print', 'glorify']
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('command', type=str,
-                        choices=['add', 'remove', 'list', 'update', 'print'],
+                        choices=['add', 'remove', 'list',
+                                 'update', 'print', 'glorify'],
                         help='Command to execute')
     parser.add_argument('--user', type=str,
                         help='Github user that tracks a repo')
@@ -71,6 +74,10 @@ def main():
         elif args.command == 'print':
             repo = tracker.load()
             print(repo)
+        elif args.command == 'glorify':
+            repo = tracker.load()
+            glory = Glory(args.work_dir)
+            glory.make(repo)
     except TrackerError as e:
         print('e %s' % str(e))
 

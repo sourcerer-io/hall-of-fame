@@ -93,6 +93,9 @@ class AvatarAdorner:
         BASE64_HEADER = 'data:image/jpeg;base64,'
         if face_url.startswith(BASE64_HEADER):
             return
+        if not face_url.startswith('http'):
+            # Relative path.
+            face_url = 'https://sourcerer.io' + face_url
 
         data = urlopen(face_url).read()
         encoded = base64.b64encode(data).decode()
@@ -173,3 +176,21 @@ def register_svg_namespaces():
 
 
 register_svg_namespaces()
+
+
+if __name__ == '__main__':
+    ava = AvatarAdorner()
+    ava.init_with_sourcerer('https://sourcerer.io/avatar/lyaronskaya')
+    #ava.init_with_sourcerer('https://sourcerer.io/avatar/devoxin')
+    ava.adorn('trending', 12)
+    open('test.svg', 'w').write(ava.get_avatar_svg())
+
+    ava = AvatarAdorner()
+    ava.init_with_sourcerer('https://sourcerer.io/avatar/roberth')
+    ava.adorn('trending', 9)
+    open('test2.svg', 'w').write(ava.get_avatar_svg())
+
+    ava = AvatarAdorner()
+    ava.init_with_face('https://avatars3.githubusercontent.com/u/5919088?v=4')
+    ava.adorn('new', 2)
+    open('test3.svg', 'w').write(ava.get_avatar_svg())

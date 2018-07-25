@@ -6,6 +6,8 @@ __copyright__ = '2018 Sourcerer, Inc'
 import json
 import os
 import re
+import shutil
+
 from datetime import datetime, timedelta, timezone
 from os import path
 from urllib.error import HTTPError
@@ -47,29 +49,30 @@ class RepoTracker:
         """Adds a repo to track.
 
         """
-        owner_dir = path.join(self.work_dir, self.user, self.owner)
-        os.makedirs(owner_dir, exist_ok=True)
-        repo = pb.Repo(
-            owner=self.owner, name=self.repo, user=self.user)
+        repo_dir = self._get_repo_dir()
+        os.makedirs(repo_dir, exist_ok=True)
+        repo = pb.Repo(owner=self.owner, name=self.repo, user=self.user)
 
-        repo_path = path.join(owner_dir, self.repo)
+        repo_path = self._get_repo_path()
         if path.exists(repo_path):
             self.error('Repo exists')
-        with open(path.join(owner_dir, self.repo), 'w') as f:
+        with open(repo_path, 'w') as f:
             f.write(text_format.MessageToString(repo))
         print('i Added repo %s:%s/%s' % (self.user, self.owner, self.repo))
 
     def remove(self):
         """Removes GitHub repo from tracking."""
-        user_dir = path.join(self.work_dir, self.user)
-        owner_dir = path.join(user_dir, self.owner)
-        repo_path = path.join(owner_dir, self.repo)
-        if path.isfile(repo_path):
-            os.remove(repo_path)
-        else:
+        if not path.exists(self._get_repo_path()):
             self.error('Repo not found')
+
+        repo_dir = self._get_repo_dir()
+        shutil.rmtree(repo_dir)
+
+        owner_dir = self._get_owner_dir()
         if not os.listdir(owner_dir):
             os.rmdir(owner_dir)
+
+        user_dir = self._get_user_dir()
         if not os.listdir(user_dir):
             os.rmdir(user_dir)
         print('i Removed repo %s:%s/%s' % (self.user, self.owner, self.repo))
@@ -78,26 +81,23 @@ class RepoTracker:
         """Returns all tracked GitHub repos."""
         for user in os.listdir(self.work_dir):
             user_dir = path.join(self.work_dir, user)
+            if not path.isdir(user_dir):
+                continue
             for owner in os.listdir(user_dir):
                 owner_dir = path.join(user_dir, owner)
                 for repo in os.listdir(owner_dir):
                     yield user, owner, repo
 
     def load(self):
-        repo_path = path.join(self.work_dir, self.user, self.owner, self.repo)
+        repo_path = self._get_repo_path()
         if not path.exists(repo_path):
             self.error('Repo not found')
+
         with open(repo_path) as f:
             repo = pb.Repo()
             text_format.Merge(f.read(), repo)
 
         return repo
-
-    def save(self, repo):
-        repo_path = path.join(self.work_dir, self.user, self.owner, self.repo)
-        with open(repo_path, 'w') as f:
-            f.write(text_format.MessageToString(repo))
-
 
     def update(self):
         repo = self.load()
@@ -110,7 +110,24 @@ class RepoTracker:
         for username, avatar in avatars.items():
             repo.avatars[username] = avatar
 
-        self.save(repo)
+        self._save(repo)
+
+    def _get_repo_path(self):
+        return path.join(self._get_repo_dir(), 'repo')
+
+    def _get_repo_dir(self):
+        return path.join(self._get_owner_dir(), self.repo)
+
+    def _get_owner_dir(self):
+        return path.join(self._get_user_dir(), self.owner)
+
+    def _get_user_dir(self):
+        return path.join(self.work_dir, self.user)
+
+    def _save(self, repo):
+        repo_path = self._get_repo_path()
+        with open(repo_path, 'w') as f:
+            f.write(text_format.MessageToString(repo))
 
     def _update_latest_commits(self, repo, avatars):
         """Makes sure repo contains 7 days worth of most recent commits."""

@@ -4,9 +4,7 @@ __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
 import json
-import os
 import re
-import shutil
 
 from datetime import datetime, timedelta, timezone
 from os import path
@@ -16,6 +14,7 @@ from urllib.request import Request, urlopen
 import dateparser
 from google.protobuf import text_format
 
+from . import storage
 from . import repo_pb2 as pb
 
 
@@ -25,9 +24,6 @@ class TrackerError(Exception):
 
 
 class RepoTracker:
-    def __init__(self, work_dir):
-        self.work_dir = work_dir
-
     def configure(self, user, owner, repo, github_token=None):
         """Sets tracker to a repo.
 
@@ -50,52 +46,47 @@ class RepoTracker:
 
         """
         repo_dir = self._get_repo_dir()
-        os.makedirs(repo_dir, exist_ok=True)
+        storage.make_dirs(repo_dir)
         repo = pb.Repo(owner=self.owner, name=self.repo, user=self.user)
 
         repo_path = self._get_repo_path()
-        if path.exists(repo_path):
+        if storage.path_exists(repo_path):
             self.error('Repo exists')
-        with open(repo_path, 'w') as f:
-            f.write(text_format.MessageToString(repo))
+        self._save(repo)
         print('i Added repo %s:%s/%s' % (self.user, self.owner, self.repo))
 
     def remove(self):
         """Removes GitHub repo from tracking."""
-        if not path.exists(self._get_repo_path()):
+        if not storage.path_exists(self._get_repo_path()):
             self.error('Repo not found')
 
         repo_dir = self._get_repo_dir()
-        shutil.rmtree(repo_dir)
+        storage.remove_subtree(repo_dir)
 
         owner_dir = self._get_owner_dir()
-        if not os.listdir(owner_dir):
-            os.rmdir(owner_dir)
+        if not storage.list_dir(owner_dir):
+            storage.remove_subtree(owner_dir)
 
         user_dir = self._get_user_dir()
-        if not os.listdir(user_dir):
-            os.rmdir(user_dir)
+        if not storage.list_dir(user_dir):
+            storage.remove_subtree(user_dir)
         print('i Removed repo %s:%s/%s' % (self.user, self.owner, self.repo))
 
     def list(self):
         """Returns all tracked GitHub repos."""
-        for user in os.listdir(self.work_dir):
-            user_dir = path.join(self.work_dir, user)
-            if not path.isdir(user_dir):
-                continue
-            for owner in os.listdir(user_dir):
-                owner_dir = path.join(user_dir, owner)
-                for repo in os.listdir(owner_dir):
+        for user in storage.list_dir('', include_files=False):
+            for owner in storage.list_dir(user):
+                owner_dir = path.join(user, owner)
+                for repo in storage.list_dir(owner_dir):
                     yield user, owner, repo
 
     def load(self):
         repo_path = self._get_repo_path()
-        if not path.exists(repo_path):
+        if not storage.path_exists(repo_path):
             self.error('Repo not found')
 
-        with open(repo_path) as f:
-            repo = pb.Repo()
-            text_format.Merge(f.read(), repo)
+        repo = pb.Repo()
+        text_format.Merge(storage.load_file(repo_path), repo)
 
         return repo
 
@@ -122,12 +113,11 @@ class RepoTracker:
         return path.join(self._get_user_dir(), self.owner)
 
     def _get_user_dir(self):
-        return path.join(self.work_dir, self.user)
+        return self.user
 
     def _save(self, repo):
         repo_path = self._get_repo_path()
-        with open(repo_path, 'w') as f:
-            f.write(text_format.MessageToString(repo))
+        storage.save_file(repo_path, text_format.MessageToString(repo))
 
     def _update_latest_commits(self, repo, avatars):
         """Makes sure repo contains 7 days worth of most recent commits."""

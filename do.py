@@ -15,6 +15,7 @@ __author__ = 'Sergey Surkov'
 import argparse
 import os.path
 
+import fame.storage
 from fame.github_tracker import RepoTracker, TrackerError
 from fame.glory import Glory
 
@@ -57,7 +58,9 @@ def parse_args():
 def main():
     args = parse_args()
 
-    tracker = RepoTracker(args.work_dir)
+    fame.storage.configure_for_local(args.work_dir)
+
+    tracker = RepoTracker()
     if is_repo_command(args.command):
         tracker.configure(args.user, args.owner, args.repo, args.token)
 
@@ -76,7 +79,7 @@ def main():
             print(repo)
         elif args.command == 'glorify':
             repo = tracker.load()
-            glory = Glory(args.work_dir)
+            glory = Glory()
             glory.make(repo)
     except TrackerError as e:
         print('e %s' % str(e))

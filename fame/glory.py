@@ -3,22 +3,21 @@
 __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
-import os
+import io
 from os import path
 
+from . import storage
 from .avatar import AvatarAdorner
 
 class Glory:
-    def __init__(self, work_dir):
-        self.work_dir = work_dir
-
+    def __init__(self):
         # Load Sourcerer / GitHub mapping. This is temporary.
         # TODO(sergey): Replace with a call to Sourcerer API.
         self.users = {}
-        with open(path.join(self.work_dir, 'users.csv')) as f:
-            for line in f:
-                github_user, sourcerer_user = line.strip().split(',')
-                self.users[github_user] = sourcerer_user
+        lines = storage.load_file('users.csv').strip().split('\n')
+        for line in lines:
+            github_user, sourcerer_user = line.strip().split(',')
+            self.users[github_user] = sourcerer_user
 
     def make(self, repo):
         """Makes hall of fame for a repo, a protobuf."""
@@ -80,18 +79,19 @@ class Glory:
             adorner.adorn(badge, num_commits)
 
             image_path = path.join(self._get_image_dir(), '%d.svg' % i)
-            with open(image_path, 'w') as f:
-                f.write(adorner.get_avatar_svg())
+            storage.save_file(image_path, adorner.get_avatar_svg())
 
         # Save the profile link file.
-        with open(self._get_link_file_path(), 'w') as f:
-            f.write('\n'.join(profile_urls))
+        storage.save_file(self._get_link_file_path(), '\n'.join(profile_urls))
 
         # Generate a test HTML.
-        with open(self._get_test_html_path(), 'w') as f:
-            for i in range(len(profile_urls)):
-                h = '<a href="%s"><img height="68px" src="images/%d.svg"></a>\n'
-                f.write(h % (profile_urls[i], i))
+        f = io.StringIO()
+        for i in range(len(profile_urls)):
+            h = '<a href="%s"><img height="68px" src="images/%d.svg"></a>\n'
+            f.write(h % (profile_urls[i], i))
+        test_html_path = self._get_test_html_path()
+        storage.save_file(test_html_path, f.getvalue())
+        print('i Saved test HTML to %s' % test_html_path)
 
     def _count_commits(self):
         contributors = {}
@@ -113,18 +113,11 @@ class Glory:
 
     def _cleanup(self):
         image_dir = self._get_image_dir()
-        if path.isdir(image_dir):
-            for f in os.listdir(image_dir):
-                try:
-                    os.remove(path.join(image_dir, f))
-                except OSError as e:
-                    print('w Failed to delete %s/%s' % (image_dir, f))
-        else:
-            os.mkdir(image_dir)
+        storage.remove_subtree(image_dir)
+        storage.make_dirs(image_dir)
 
         link_file = self._get_link_file_path()
-        if path.isfile(link_file):
-            os.remove(link_file)
+        storage.remove_file(link_file)
 
     def _get_link_file_path(self):
         return path.join(self._get_repo_dir(), 'links.txt')
@@ -136,5 +129,4 @@ class Glory:
         return path.join(self._get_repo_dir(), 'images')
 
     def _get_repo_dir(self):
-        return path.join(self.work_dir, self.repo.user,
-                         self.repo.owner, self.repo.name)
+        return path.join(self.repo.user, self.repo.owner, self.repo.name)

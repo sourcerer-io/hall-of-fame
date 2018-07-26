@@ -4,6 +4,7 @@ __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
 from .local_storage import LocalStorage
+from .google_cloud_storage import GoogleCloudStorage
 
 storage = None
 
@@ -15,7 +16,7 @@ def configure_for_local(work_dir):
 
 def configure_for_google_cloud(bucket):
     global storage
-    error('Google Cloud storage not supported yet')
+    storage = GoogleCloudStorage(bucket)
 
 
 def make_dirs(path):

@@ -13,8 +13,9 @@ class Glory:
     def __init__(self):
         # Load Sourcerer / GitHub mapping. This is temporary.
         # TODO(sergey): Replace with a call to Sourcerer API.
+        data = storage.load_file('users.csv')
+        lines = data.strip().split('\n')
         self.users = {}
-        lines = storage.load_file('users.csv').strip().split('\n')
         for line in lines:
             github_user, sourcerer_user = line.strip().split(',')
             self.users[github_user] = sourcerer_user

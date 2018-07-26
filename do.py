@@ -36,8 +36,10 @@ def parse_args():
                         help='Github user that owns a repo')
     parser.add_argument('--repo', type=str,
                         help='Github repo name, excluding owner')
-    parser.add_argument('--work_dir', type=str, required=True,
+    parser.add_argument('--work_dir', type=str,
                         help='Working directory to store data')
+    parser.add_argument('--gcloud_bucket', type=str,
+                        help='Google cloud bucket to store data')
     parser.add_argument('--token', type=str, help='Github API token')
     args = parser.parse_args()
 
@@ -49,8 +51,11 @@ def parse_args():
         if not args.repo:
             parser.error('Must provide repo name')
 
-    if not os.path.isdir(args.work_dir):
+    if args.work_dir and not os.path.isdir(args.work_dir):
         parser.error('--work_dir must be an existing directory')
+
+    if not args.work_dir and not args.gcloud_bucket:
+        parser.error('Either --work_dir or --gcloud_bucket must be provided')
 
     return args
 
@@ -58,7 +63,10 @@ def parse_args():
 def main():
     args = parse_args()
 
-    fame.storage.configure_for_local(args.work_dir)
+    if args.work_dir:
+        fame.storage.configure_for_local(args.work_dir)
+    elif args.gcloud_bucket:
+        fame.storage.configure_for_google_cloud(args.gcloud_bucket)
 
     tracker = RepoTracker()
     if is_repo_command(args.command):

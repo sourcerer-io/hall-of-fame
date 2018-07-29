@@ -52,6 +52,20 @@ def glorify(data, context):
 
         bucket = os.environ.get('bucket', None)
         error_if_false(bucket, 'Google cloud bucket is required')
+        fame.storage.configure_for_google_cloud(os.environ['bucket'])
+
+        tracker = RepoTracker()
+        tracker.configure(user, owner, repo)
+
+        if command == Command.ADD:
+            tracker.add()
+        elif command == Command.REMOVE:
+            tracker.remove()
+        elif command == Command.UPDATE:
+            tracker.update()
+            repo = tracker.load()
+            glory = Glory()
+            glory.make(repo)
 
     except Exception as e:
         print('e %s' % str(e))

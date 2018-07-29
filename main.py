@@ -17,13 +17,13 @@ class CloudError(Exception):
 
 
 class Command:
-    ADD = 'add'         # Add a repo to tracking.
-    REMOVE = 'remove'   # Remove a repo from tracking.
-    UPDATE = 'refresh'  # Update repo stats and refresh badges (update+glorify).
+    ADD = 'add'          # Add a repo to tracking.
+    REMOVE = 'remove'    # Remove a repo from tracking.
+    REFRESH = 'refresh'  # Update repo stats and remake badges (update+glorify).
 
     @staticmethod
     def is_valid(command):
-        return command in [Command.ADD, Command.REMOVE, Command.UPDATE]
+        return command in [Command.ADD, Command.REMOVE, Command.REFRESH]
 
 
 def error(message):
@@ -63,7 +63,7 @@ def fame_glorify(data, context):
             tracker.add()
         elif command == Command.REMOVE:
             tracker.remove()
-        elif command == Command.UPDATE:
+        elif command == Command.REFRESH:
             tracker.update()
             repo = tracker.load()
             glory = Glory()
@@ -85,5 +85,15 @@ def fame_enqueue_refresh(data, context):
         bucket = os.environ.get('bucket', None)
         error_if_false(bucket, 'Google cloud bucket is required')
         fame.storage.configure_for_google_cloud(os.environ['bucket'])
+
+        client = pubsub.PublisherClient()
+        full_topic = 'projects/%s/topics/%s' % (project, topic)
+
+        tracker = RepoTracker()
+        for user, owner, repo in tracker.list():
+           client.publish(full_topic, b'', command=Command.REFRESH,
+                          user=user, owner=owner, repo=repo)
+           print('i Enqueued for refresh %s:%s/%s' % (user, owner, repo))
+
     except Exception as e:
         print('e %s' % str(e))

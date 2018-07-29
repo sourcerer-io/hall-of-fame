@@ -35,7 +35,7 @@ def error_if_false(expression, message):
         error(message)
 
 
-def glorify(data, context):
+def fame_glorify(data, context):
     """Google cloud function. Adds/Removes/Refreshes a repo."""
     try:
         attrs = data['attributes']
@@ -73,7 +73,7 @@ def glorify(data, context):
         print('e %s' % str(e))
 
 
-def enqueue_refresh(data, context):
+def fame_enqueue_refresh(data, context):
     """Google cloud function. Adds refresh tasks for all repos to pubsub."""
     try:
         project = os.environ.get('project', None)

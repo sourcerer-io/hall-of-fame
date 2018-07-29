@@ -32,7 +32,7 @@ class Glory:
             top_guns = self._assign_top()
 
         self._issue_badges(trending, new_faces, top_guns)
-        print('i Glorified %s:%s/%s' (repo.user, repo.owner, repo.name))
+        print('i Glorified %s:%s/%s' % (repo.user, repo.owner, repo.name))
 
     def _assign_trending_and_new(self):
         contributors = self._count_commits()

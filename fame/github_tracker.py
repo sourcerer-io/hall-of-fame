@@ -102,6 +102,7 @@ class RepoTracker:
             repo.avatars[username] = avatar
 
         self._save(repo)
+        print('i Updated repo %s:%s/%s' % (self.user, self.owner, self.repo))
 
     def _get_repo_path(self):
         return path.join(self._get_repo_dir(), 'repo')

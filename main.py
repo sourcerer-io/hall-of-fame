@@ -4,6 +4,7 @@ __copyright__ = '2018 Sourcerer, Inc.'
 __author__ = 'Sergey Surkov'
 
 import os
+from google.cloud import pubsub
 
 import fame.storage
 from fame.github_tracker import RepoTracker, TrackerError
@@ -35,11 +36,12 @@ def error_if_false(expression, message):
 
 
 def glorify(data, context):
-    """Google cloud function."""
+    """Google cloud function. Adds/Removes/Refreshes a repo."""
     try:
         attrs = data['attributes']
         command = attrs.get('command', None)
-        error_if_false(Command.is_valid(command), 'Invalid command')
+        error_if_false(Command.is_valid(command),
+                       'Invalid command %s' % command)
 
         user = attrs.get('user', None)
         error_if_false(user, 'User is required')
@@ -67,5 +69,21 @@ def glorify(data, context):
             glory = Glory()
             glory.make(repo)
 
+    except Exception as e:
+        print('e %s' % str(e))
+
+
+def enqueue_refresh(data, context):
+    """Google cloud function. Adds refresh tasks for all repos to pubsub."""
+    try:
+        project = os.environ.get('project', None)
+        error_if_false(project, 'Google pubsub project is required')
+
+        topic = os.environ.get('topic', None)
+        error_if_false(topic, 'Google pubsub topic is required')
+
+        bucket = os.environ.get('bucket', None)
+        error_if_false(bucket, 'Google cloud bucket is required')
+        fame.storage.configure_for_google_cloud(os.environ['bucket'])
     except Exception as e:
         print('e %s' % str(e))

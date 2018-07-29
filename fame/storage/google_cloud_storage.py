@@ -33,7 +33,7 @@ class GoogleCloudStorage(StorageBase):
         self.bucket.delete_blobs(blobs)
 
     def list_dir(self, dir_path, include_files=True, include_subdirs=True):
-        if not dir_path.endswith('/'):
+        if dir_path and not dir_path.endswith('/'):
             dir_path += '/'
         blob_iter = self.bucket.list_blobs(prefix=dir_path, delimiter='/')
         files = list(blob_iter)  # Must do for actual API calls.

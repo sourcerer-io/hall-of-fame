@@ -81,7 +81,8 @@ class Glory:
             adorner.adorn(badge, num_commits)
 
             image_path = path.join(self._get_image_dir(), '%d.svg' % i)
-            storage.save_file(image_path, adorner.get_avatar_svg())
+            avatar_svg = adorner.get_avatar_svg()
+            storage.save_file(image_path, avatar_svg, 'image/svg+xml')
 
         # Save the profile link file.
         storage.save_file(self._get_link_file_path(), '\n'.join(profile_urls))
@@ -92,7 +93,7 @@ class Glory:
             h = '<a href="%s"><img height="68px" src="images/%d.svg"></a>\n'
             f.write(h % (profile_urls[i], i))
         test_html_path = self._get_test_html_path()
-        storage.save_file(test_html_path, f.getvalue())
+        storage.save_file(test_html_path, f.getvalue(), 'text/html')
         print('i Saved test HTML to %s' % test_html_path)
 
     def _count_commits(self):

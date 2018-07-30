@@ -35,6 +35,12 @@ def error_if_false(expression, message):
         error(message)
 
 
+def update_and_glorify(tracker, glory):
+    tracker.update()
+    repo = tracker.load()
+    glory.make(repo)
+
+
 def fame_glorify(data, context):
     """Google cloud function. Adds/Removes/Refreshes a repo."""
     try:
@@ -58,16 +64,15 @@ def fame_glorify(data, context):
 
         tracker = RepoTracker()
         tracker.configure(user, owner, repo)
+        glory = Glory()
 
         if command == Command.ADD:
             tracker.add()
+            update_and_glorify(tracker, glory)
         elif command == Command.REMOVE:
             tracker.remove()
         elif command == Command.REFRESH:
-            tracker.update()
-            repo = tracker.load()
-            glory = Glory()
-            glory.make(repo)
+            update_and_glorify(tracker, glory)
 
     except Exception as e:
         print('e %s' % str(e))

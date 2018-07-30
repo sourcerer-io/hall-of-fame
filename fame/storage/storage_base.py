@@ -20,7 +20,7 @@ class StorageBase:
     def path_exists(self, path):
         pass
 
-    def save_file(self, path, data):
+    def save_file(self, path, data, content_type='text/plain'):
         pass
 
     def load_file(self, path):

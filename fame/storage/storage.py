@@ -52,10 +52,10 @@ def path_exists(path):
     return storage.path_exists(path)
 
 
-def save_file(path, data):
+def save_file(path, data, content_type='text/plain'):
     if not storage:
         error('Storage not initialized')
-    return storage.save_file(path, data)
+    return storage.save_file(path, data, content_type)
 
 
 def load_file(path):

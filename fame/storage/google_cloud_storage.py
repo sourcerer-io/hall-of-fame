@@ -51,9 +51,9 @@ class GoogleCloudStorage(StorageBase):
     def path_exists(self, path):
         return self.bucket.get_blob(path) is not None
 
-    def save_file(self, path, data):
+    def save_file(self, path, data, content_type='text/plain'):
         blob = self.bucket.blob(path)
-        blob.upload_from_string(data)
+        blob.upload_from_string(data, content_type=content_type)
  
     def load_file(self, path):
         blob = self.bucket.blob(path)

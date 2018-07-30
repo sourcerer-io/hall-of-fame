@@ -45,7 +45,7 @@ class LocalStorage(StorageBase):
         full_path = os.path.join(self.work_dir, path)
         return os.path.exists(full_path)
 
-    def save_file(self, path, data):
+    def save_file(self, path, data, content_type='text/plain'):
         full_path = os.path.join(self.work_dir, path)
         with open(full_path, 'w') as f:
             f.write(data)

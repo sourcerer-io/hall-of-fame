@@ -41,9 +41,13 @@ class LocalStorage(StorageBase):
 
         return result
 
-    def path_exists(self, path):
-        full_path = os.path.join(self.work_dir, path)
-        return os.path.exists(full_path)
+    def file_exists(self, file_path):
+        full_path = os.path.join(self.work_dir, file_path)
+        return os.path.isfile(full_path)
+
+    def dir_exists(self, dir_path):
+        full_path = os.path.join(self.work_dir, dir_path)
+        return os.path.isdir(full_path)
 
     def save_file(self, path, data, content_type='text/plain'):
         full_path = os.path.join(self.work_dir, path)

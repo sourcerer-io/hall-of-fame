@@ -50,14 +50,14 @@ class RepoTracker:
         repo = pb.Repo(owner=self.owner, name=self.repo, user=self.user)
 
         repo_path = self._get_repo_path()
-        if storage.path_exists(repo_path):
+        if storage.file_exists(repo_path):
             self.error('Repo exists')
         self._save(repo)
         print('i Added repo %s:%s/%s' % (self.user, self.owner, self.repo))
 
     def remove(self):
         """Removes GitHub repo from tracking."""
-        if not storage.path_exists(self._get_repo_path()):
+        if not storage.file_exists(self._get_repo_path()):
             self.error('Repo not found')
 
         repo_dir = self._get_repo_dir()
@@ -76,7 +76,7 @@ class RepoTracker:
     def list(user=None):
         """Returns all tracked GitHub repos."""
         if user:
-            if not storage.path_exists(user):
+            if not storage.dir_exists(user):
                 return
             users = [user]
         else:
@@ -90,7 +90,7 @@ class RepoTracker:
 
     def load(self):
         repo_path = self._get_repo_path()
-        if not storage.path_exists(repo_path):
+        if not storage.file_exists(repo_path):
             self.error('Repo not found')
 
         repo = pb.Repo()

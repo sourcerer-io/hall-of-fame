@@ -17,7 +17,10 @@ class StorageBase:
     def list_dir(self, dir_path, include_files=True, include_subdirs=True):
         pass
 
-    def path_exists(self, path):
+    def file_exists(self, file_path):
+        pass
+
+    def dir_exists(self, dir_path):
         pass
 
     def save_file(self, path, data, content_type='text/plain'):

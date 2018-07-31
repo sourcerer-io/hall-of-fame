@@ -48,8 +48,16 @@ class GoogleCloudStorage(StorageBase):
         discard = len(dir_path)
         return [e[discard:].strip('/') for e in result]
 
-    def path_exists(self, path):
-        return self.bucket.get_blob(path) is not None
+    def file_exists(self, file_path):
+        return self.bucket.get_blob(file_path) is not None
+
+    def dir_exists(self, dir_path):
+        if dir_path and not dir_path.endswith('/'):
+            dir_path += '/'
+        blob_iter = self.bucket.list_blobs(prefix=dir_path, delimiter='/')
+        files = list(blob_iter)
+        subdirs = list(blob_iter.prefixes)
+        return bool(files) or bool(subdirs)
 
     def save_file(self, path, data, content_type='text/plain'):
         blob = self.bucket.blob(path)

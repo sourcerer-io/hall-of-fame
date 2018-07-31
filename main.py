@@ -4,6 +4,8 @@ __copyright__ = '2018 Sourcerer, Inc.'
 __author__ = 'Sergey Surkov'
 
 import os
+
+import flask
 from google.cloud import pubsub
 
 import fame.storage
@@ -16,14 +18,25 @@ class CloudError(Exception):
         super().__init__(message)
 
 
-class Command:
+class Manage:
+    """Management commands."""
     ADD = 'add'          # Add a repo to tracking.
     REMOVE = 'remove'    # Remove a repo from tracking.
-    REFRESH = 'refresh'  # Update repo stats and remake badges (update+glorify).
+    LIST = 'list'        # List repos for a given user.
 
     @staticmethod
     def is_valid(command):
-        return command in [Command.ADD, Command.REMOVE, Command.REFRESH]
+        return command in [Manage.ADD, Manage.REMOVE, Manage.LIST]
+
+
+class Refresh:
+    """Refresh commands."""
+    REFRESH = 'refresh'  # Update repo stats and remake badges (update+glorify).
+    REFRESH_ALL = 'refresh-all'  # Refresh all repos.
+
+    @staticmethod
+    def is_valid(command):
+        return command in [Refresh.REFRESH, Refresh.REFRESH_ALL]
 
 
 def error(message):
@@ -41,45 +54,59 @@ def update_and_glorify(tracker, glory):
     glory.make(repo)
 
 
-def fame_glorify(data, context):
-    """Google cloud function. Adds/Removes/Refreshes a repo."""
-    try:
-        attrs = data['attributes']
-        command = attrs.get('command', None)
-        error_if_false(Command.is_valid(command),
-                       'Invalid command %s' % command)
+def make_error_response(error_code, message):
+    response = flask.jsonify({'status': 'error', 'message': message})
+    response.status_code = error_code
+    return response
 
-        user = attrs.get('user', None)
+
+def fame_manage(request):
+    """HTTP Google cloud function. Adds/Removes/Lists repos."""
+    try:
+        data = request.get_json()
+        error_if_false(data, 'No payload')
+
+        command = data.get('command', None)
+        error_if_false(Manage.is_valid(command), 'Invalid command %s' % command)
+
+        user = data.get('user', None)
         error_if_false(user, 'User is required')
 
-        owner = attrs.get('owner', None)
-        error_if_false(owner, 'Repo owner is required')
+        if command in [Manage.ADD, Manage.REMOVE]:
+            owner = data.get('owner', None)
+            error_if_false(owner, 'Repo owner is required')
 
-        repo = attrs.get('repo', None)
-        error_if_false(repo, 'Repo is required')
+            repo = data.get('repo', None)
+            error_if_false(repo, 'Repo is required')
 
         bucket = os.environ.get('bucket', None)
         error_if_false(bucket, 'Google cloud bucket is required')
         fame.storage.configure_for_google_cloud(os.environ['bucket'])
 
         tracker = RepoTracker()
-        tracker.configure(user, owner, repo)
-        glory = Glory()
+        result = {'status': 'ok'}
 
-        if command == Command.ADD:
+        if command == Manage.ADD:
+            tracker.configure(user, owner, repo)
             tracker.add()
-            update_and_glorify(tracker, glory)
-        elif command == Command.REMOVE:
+        elif command == Manage.REMOVE:
+            tracker.configure(user, owner, repo)
             tracker.remove()
-        elif command == Command.REFRESH:
-            update_and_glorify(tracker, glory)
+        elif command == Manage.LIST:
+            directory = []
+            for _, owner, repo in RepoTracker.list(user):
+                directory.append({'user': user, 'owner': owner, 'repo': repo})
+            result['data'] = directory
+
+        return flask.jsonify(result)
 
     except Exception as e:
         print('e %s' % str(e))
+        return make_error_response(400, str(e))
 
 
-def fame_enqueue_refresh(data, context):
-    """Google cloud function. Adds refresh tasks for all repos to pubsub."""
+def fame_refresh(data, context):
+    """Google cloud function. Adds refresh tasks for repos to pubsub."""
     try:
         project = os.environ.get('project', None)
         error_if_false(project, 'Google pubsub project is required')

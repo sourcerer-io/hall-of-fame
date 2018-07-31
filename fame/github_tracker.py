@@ -72,9 +72,17 @@ class RepoTracker:
             storage.remove_subtree(user_dir)
         print('i Removed repo %s:%s/%s' % (self.user, self.owner, self.repo))
 
-    def list(self):
+    @staticmethod
+    def list(user=None):
         """Returns all tracked GitHub repos."""
-        for user in storage.list_dir('', include_files=False):
+        if user:
+            if not storage.path_exists(user):
+                return
+            users = [user]
+        else:
+            users = storage.list_dir('', include_files=False)
+
+        for user in users:
             for owner in storage.list_dir(user):
                 owner_dir = path.join(user, owner)
                 for repo in storage.list_dir(owner_dir):

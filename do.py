@@ -80,7 +80,7 @@ def main():
         elif args.command == 'update':
             tracker.update()
         elif args.command == 'list':
-            for user, owner, repo in tracker.list():
+            for user, owner, repo in RepoTracker.list(args.user):
                 print('%s:%s/%s' % (user, owner, repo))
         elif args.command == 'print':
             repo = tracker.load()

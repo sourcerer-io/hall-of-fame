@@ -48,16 +48,26 @@ def error_if_false(expression, message):
         error(message)
 
 
-def update_and_glorify(tracker, glory):
-    tracker.update()
-    repo = tracker.load()
-    glory.make(repo)
-
-
 def make_error_response(error_code, message):
     response = flask.jsonify({'status': 'error', 'message': message})
     response.status_code = error_code
     return response
+
+
+def configure_storage():
+    bucket = os.environ.get('bucket', None)
+    error_if_false(bucket, 'Google cloud bucket is required')
+    fame.storage.configure_for_google_cloud(os.environ['bucket'])
+
+
+def get_fame_pubsub_topic():
+    project = os.environ.get('project', None)
+    error_if_false(project, 'Google pubsub project is required')
+
+    topic = os.environ.get('topic', None)
+    error_if_false(topic, 'Google pubsub topic is required')
+
+    return 'projects/%s/topics/%s' % (project, topic)
 
 
 def fame_manage(request):
@@ -72,6 +82,9 @@ def fame_manage(request):
         user = data.get('user', None)
         error_if_false(user, 'User is required')
 
+        configure_storage()
+        topic = get_fame_pubsub_topic()  # Let it fail early.
+
         if command in [Manage.ADD, Manage.REMOVE]:
             owner = data.get('owner', None)
             error_if_false(owner, 'Repo owner is required')
@@ -79,9 +92,6 @@ def fame_manage(request):
             repo = data.get('repo', None)
             error_if_false(repo, 'Repo is required')
 
-        bucket = os.environ.get('bucket', None)
-        error_if_false(bucket, 'Google cloud bucket is required')
-        fame.storage.configure_for_google_cloud(os.environ['bucket'])
 
         tracker = RepoTracker()
         result = {'status': 'ok'}
@@ -89,6 +99,9 @@ def fame_manage(request):
         if command == Manage.ADD:
             tracker.configure(user, owner, repo)
             tracker.add()
+            client = pubsub.PublisherClient()
+            client.publish(topic, b'', command=Refresh.REFRESH,
+                           user=user, owner=owner, repo=repo)
         elif command == Manage.REMOVE:
             tracker.configure(user, owner, repo)
             tracker.remove()
@@ -106,26 +119,39 @@ def fame_manage(request):
 
 
 def fame_refresh(data, context):
-    """Google cloud function. Adds refresh tasks for repos to pubsub."""
+    """Pubsub Google cloud function. Refreshes repos."""
     try:
-        project = os.environ.get('project', None)
-        error_if_false(project, 'Google pubsub project is required')
+        attrs = data['attributes']
+        command = attrs.get('command', None)
+        error_if_false(Refresh.is_valid(command),
+                       'Invalid command %s' % command)
 
-        topic = os.environ.get('topic', None)
-        error_if_false(topic, 'Google pubsub topic is required')
+        configure_storage()
+        topic = get_fame_pubsub_topic()  # Let it fail early.
 
-        bucket = os.environ.get('bucket', None)
-        error_if_false(bucket, 'Google cloud bucket is required')
-        fame.storage.configure_for_google_cloud(os.environ['bucket'])
+        if command == Refresh.REFRESH_ALL:  # Enqueue refresh for all repos.
+            client = pubsub.PublisherClient()
+            for user, owner, repo in RepoTracker.list():
+                client.publish(topic, b'', command=Refresh.REFRESH,
+                               user=user, owner=owner, repo=repo)
+                print('i Enqueued for refresh %s:%s/%s' % (user, owner, repo))
 
-        client = pubsub.PublisherClient()
-        full_topic = 'projects/%s/topics/%s' % (project, topic)
+        elif command == Refresh.REFRESH:  # Do an actual refresh for a repo.
+            user = attrs.get('user', None)
+            error_if_false(user, 'User is required')
 
-        tracker = RepoTracker()
-        for user, owner, repo in tracker.list():
-           client.publish(full_topic, b'', command=Command.REFRESH,
-                          user=user, owner=owner, repo=repo)
-           print('i Enqueued for refresh %s:%s/%s' % (user, owner, repo))
+            owner = attrs.get('owner', None)
+            error_if_false(owner, 'Repo owner is required')
+
+            repo = attrs.get('repo', None)
+            error_if_false(repo, 'Repo is required')
+
+            tracker = RepoTracker()
+            tracker.configure(user, owner, repo)
+            tracker.update()
+
+            glory = Glory()
+            glory.make(tracker.load())
 
     except Exception as e:
         print('e %s' % str(e))

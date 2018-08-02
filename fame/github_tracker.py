@@ -169,8 +169,6 @@ class RepoTracker:
 
     def _update_top_contributors(self, repo, avatars):
         repo.ClearField('top_contributors')
-        if repo.recent_commits:
-            return
 
         url = self._make_github_url(repo.owner, repo.name, 'contributors')
         r = self._open_github_url(url)

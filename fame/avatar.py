@@ -28,6 +28,63 @@ TOP = 'top'
 BADGE_COLORS = {NEW: '#4CB04F', TRENDING: '#2B95CF', TOP: '#F28F56'}
 
 
+class Badger:
+    """Badger makes badges. In case you wonder."""
+    def __init__(self):
+        # A supercrude way to estimate symbol widths.
+        self.symbols = {s: 20 for s in ' 0123456789abcdefghijklmnopqrstuvwxyz'}
+        self.symbols.update({s: 9 for s in 'fjt'})
+        self.symbols.update({s: 5 for s in 'il'})
+        self.symbols.update({s: 30 for s in 'mw'})
+
+    def make_badge(self, label, value):
+        if label not in [TRENDING, NEW, TOP]:
+            raise AvatarError('Invalid badge label: %s' % label)
+
+        self.label = label
+        self.value = str(value)
+        self.value_color = BADGE_COLORS[self.label]
+
+        self._estimate_badge_size()
+        self._make_badge()
+
+    def get_badge_svg_dom(self):
+        return self.svg
+
+    def get_badge_svg_string(self):
+        return ElementTree.tostring(self.svg, encoding='unicode')
+
+    def get_badge_size(self):
+        return self.badge_w, self.badge_h
+
+    def _estimate_badge_size(self):
+        # All sizes are relative units.
+        self.label_w = self._estimate_string_size(self.label)
+        self.value_w = self._estimate_string_size(self.value)
+        self.badge_w = self.label_w + self.value_w
+        self.badge_h = BADGE_H
+
+    def _estimate_string_size(self, s):
+        return sum([self.symbols[c] for c in s]) + 20
+
+    def _make_badge(self):
+        svg = SVG_BADGE.format(
+           badge_w=self.badge_w, badge_h=self.badge_h,
+           label_w=self.label_w,
+           label_x=self.label_w / 2, label_y=self.badge_h - 13,
+           label_text=self.label,
+           value_x=self.badge_w - self.value_w / 2,
+           value_y=self.badge_h - 13,
+           value_w=self.value_w,
+           value_text=self.value, value_color=self.value_color)
+        self.svg = ElementTree.fromstring(svg)
+
+        self.svg.set('width', '%.02f' % self.badge_w)
+        self.svg.set('height', '%.02f' % self.badge_h)
+        self.svg.set(
+            'viewBox', '0 0 %.02f %.02f' % (self.badge_w, self.badge_h))
+
+
 class AvatarAdorner:
     def init_with_face(self, face_url):
         self.svg = ElementTree.fromstring(SVG_GITHUB)
@@ -159,10 +216,3 @@ def register_svg_namespaces():
 
 
 register_svg_namespaces()
-
-
-if __name__ == '__main__':
-    dummy = DummyMaker()
-    legend = dummy.make_legend()
-
-    open('test.svg', 'w').write(legend)

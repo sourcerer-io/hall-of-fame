@@ -6,7 +6,7 @@ __copyright__ = '2018 Sourcerer, Inc'
 import json
 import re
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from os import path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -130,7 +130,8 @@ class RepoTracker:
 
     def _update_latest_commits(self, repo, avatars):
         """Makes sure repo contains 7 days worth of most recent commits."""
-        last_known = repo.recent_commits[0].sha if repo.recent_commits else None
+        last_known = (repo.recent_commits[0].sha if repo.recent_commits
+                      else None)
         commits = []
         now = datetime.utcnow()
         since = now - timedelta(days=7)

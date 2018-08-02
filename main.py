@@ -9,7 +9,7 @@ import flask
 from google.cloud import pubsub
 
 import fame.storage
-from fame.github_tracker import RepoTracker, TrackerError
+from fame.github_tracker import RepoTracker
 from fame.glory import Glory
 
 
@@ -31,7 +31,7 @@ class Manage:
 
 class Refresh:
     """Refresh commands."""
-    REFRESH = 'refresh'  # Update repo stats and remake badges (update+glorify).
+    REFRESH = 'refresh'  # Update repo stats and make badges (update+glorify).
     REFRESH_ALL = 'refresh-all'  # Refresh all repos.
 
     @staticmethod
@@ -77,7 +77,8 @@ def fame_manage(request):
         error_if_false(data, 'No payload')
 
         command = data.get('command', None)
-        error_if_false(Manage.is_valid(command), 'Invalid command %s' % command)
+        error_if_false(Manage.is_valid(command),
+                       'Invalid command %s' % command)
 
         user = data.get('user', None)
         error_if_false(user, 'User is required')
@@ -91,7 +92,6 @@ def fame_manage(request):
 
             repo = data.get('repo', None)
             error_if_false(repo, 'Repo is required')
-
 
         tracker = RepoTracker()
         result = {'status': 'ok'}

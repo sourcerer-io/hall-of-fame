@@ -39,7 +39,7 @@ class AvatarAdorner:
       <g clip-path="url(#badge-clip)">
         <rect width="{label_w}" height="100%" fill="#777777"/>
         <rect x="{label_w}" width="{count_w}" height="100%"
-            fill="{count_color}"/> 
+            fill="{count_color}"/>
       </g>
       <g text-anchor="middle" font-size="34" fill="#ffffff"
           font-family="Roboto,DejaVu Sans,Verdana,Geneva,sans-serif">
@@ -110,7 +110,7 @@ class AvatarAdorner:
         _, _, self.face_w, self.face_h = map(float, view_box.split(' '))
 
         count_colors = {
-            'new': '#4CB04F', 'trending': '#2B95CF', 'top': '#F28F56' }
+            'new': '#4CB04F', 'trending': '#2B95CF', 'top': '#F28F56'}
         self.count_color = count_colors[self.badge]
 
     def _nest_svg(self):
@@ -126,7 +126,7 @@ class AvatarAdorner:
 
     def _estimate_badge_size(self):
         # All sizes are relative units.
-        label_widths = { 'top': 90, 'new': 90, 'trending': 146 }
+        label_widths = {'top': 90, 'new': 90, 'trending': 146}
         self.badge_count_w = len(str(self.badge_count)) * 20 + 20
         self.badge_w = label_widths[self.badge] + self.badge_count_w
         self.badge_h = 50
@@ -141,7 +141,7 @@ class AvatarAdorner:
             # Badge is wider than face, center face with respect to the badge.
             self.face_svg.set('x', '%.02f' % ((self.badge_w - w) / 2))
             w = self.badge_w
-    
+
         self.svg.set('viewBox', '0 0 %.02f %.02f' % (w, h))
 
     def _attach_badge(self):
@@ -166,6 +166,7 @@ class AvatarAdorner:
         self.badge_svg.set('height', '%.02f' % self.badge_h)
         self.badge_svg.set(
             'viewBox', '0 0 %.02f %.02f' % (self.badge_w, self.badge_h))
+
 
 def register_svg_namespaces():
     """Some global initiaization."""

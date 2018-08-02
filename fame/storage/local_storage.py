@@ -8,6 +8,7 @@ import shutil
 
 from .storage_base import StorageBase
 
+
 class LocalStorage(StorageBase):
     def __init__(self, work_dir):
         self.work_dir = work_dir

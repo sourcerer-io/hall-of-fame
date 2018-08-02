@@ -62,7 +62,7 @@ class GoogleCloudStorage(StorageBase):
     def save_file(self, path, data, content_type='text/plain'):
         blob = self.bucket.blob(path)
         blob.upload_from_string(data, content_type=content_type)
- 
+
     def load_file(self, path):
         blob = self.bucket.blob(path)
         return blob.download_as_string().decode()

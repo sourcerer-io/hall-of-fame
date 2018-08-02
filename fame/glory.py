@@ -9,6 +9,7 @@ from os import path
 from . import storage
 from .avatar import AvatarAdorner
 
+
 class Glory:
     def __init__(self):
         # Load Sourcerer / GitHub mapping. This is temporary.
@@ -70,11 +71,11 @@ class Glory:
             username, num_commits, badge = entry
 
             adorner = AvatarAdorner()
-            sourcerer_username, sourcerer_url = self._map_to_sourcerer(username) 
+            sourcerer_user, sourcerer_url = self._map_to_sourcerer(username)
             if sourcerer_url:
                 adorner.init_with_sourcerer(sourcerer_url)
                 profile_urls.append(
-                    'https://sourcerer.io/' + sourcerer_username)
+                    'https://sourcerer.io/' + sourcerer_user)
             else:
                 adorner.init_with_face(self.repo.avatars[username])
                 profile_urls.append('https://github.com/' + username)

@@ -13,6 +13,19 @@ class AvatarError(Exception):
         super().__init__(message)
 
 
+# Badge configuration.
+BADGE_H = 50
+BADGE_OFF = 10
+
+# Labels.
+TRENDING = 'trending'
+NEW = 'new'
+TOP = 'top'
+
+# Badge colors.
+BADGE_COLORS = {NEW: '#4CB04F', TRENDING: '#2B95CF', TOP: '#F28F56'}
+
+
 class AvatarAdorner:
     SVG_GITHUB = """
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
@@ -67,6 +80,9 @@ class AvatarAdorner:
           badge: Badge type.
           count: Number to print for the badge.
         """
+        if badge not in [TRENDING, NEW, TOP]:
+            raise AvatarError('Invalid badge: %s' % badge)
+
         self.badge = badge
         self.badge_count = count
 
@@ -109,9 +125,7 @@ class AvatarAdorner:
             raise AvatarError('No viewBox found')
         _, _, self.face_w, self.face_h = map(float, view_box.split(' '))
 
-        count_colors = {
-            'new': '#4CB04F', 'trending': '#2B95CF', 'top': '#F28F56'}
-        self.count_color = count_colors[self.badge]
+        self.count_color = BADGE_COLORS[self.badge]
 
     def _nest_svg(self):
         """Puts the input SVG under a nested SVG tag."""
@@ -126,11 +140,11 @@ class AvatarAdorner:
 
     def _estimate_badge_size(self):
         # All sizes are relative units.
-        label_widths = {'top': 90, 'new': 90, 'trending': 146}
+        label_widths = {TOP: 90, NEW: 90, TRENDING: 146}
         self.badge_count_w = len(str(self.badge_count)) * 20 + 20
         self.badge_w = label_widths[self.badge] + self.badge_count_w
-        self.badge_h = 50
-        self.badge_off = 10
+        self.badge_h = BADGE_H
+        self.badge_off = BADGE_OFF
 
     def _make_space_for_badge(self):
         """Makes space in the input SVG for the badge."""

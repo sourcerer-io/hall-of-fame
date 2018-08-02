@@ -7,6 +7,8 @@ import base64
 from urllib.request import urlopen
 from xml.etree import ElementTree
 
+from .svg_templates import SVG_GITHUB, SVG_BADGE
+
 
 class AvatarError(Exception):
     def __init__(self, message):
@@ -27,42 +29,8 @@ BADGE_COLORS = {NEW: '#4CB04F', TRENDING: '#2B95CF', TOP: '#F28F56'}
 
 
 class AvatarAdorner:
-    SVG_GITHUB = """
-    <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        viewBox="0 0 200 200">
-      <defs>
-        <clipPath id="circle-clip">
-          <circle cx="100" cy="100" r="85"/>
-        </clipPath>
-      </defs>
-      <image clip-path="url(#circle-clip)"
-          width="200" height="200" xlink:href=""/>
-      <circle cx="100" cy="100" r="95"
-          stroke="#c1c5ca" stroke-width="1.5" fill="transparent" />
-    </svg>"""
-
-    SVG_BADGE = """
-    <svg>
-      <defs>
-        <clipPath id="badge-clip">
-          <rect width="{badge_w}" height="{badge_h}" rx="5" />
-        </clipPath>
-      </defs>
-      <g clip-path="url(#badge-clip)">
-        <rect width="{label_w}" height="100%" fill="#777777"/>
-        <rect x="{label_w}" width="{count_w}" height="100%"
-            fill="{count_color}"/>
-      </g>
-      <g text-anchor="middle" font-size="34" fill="#ffffff"
-          font-family="Roboto,DejaVu Sans,Verdana,Geneva,sans-serif">
-        <text x="{label_x}" y="{label_y}">{label_text}</text>
-        <text x="{count_x}" y="{count_y}">{count_text}</text>
-      </g>
-    </svg>"""
-
     def init_with_face(self, face_url):
-        self.svg = ElementTree.fromstring(AvatarAdorner.SVG_GITHUB)
+        self.svg = ElementTree.fromstring(SVG_GITHUB)
         self._init_face_image()
         self.face_image.set(
             '{http://www.w3.org/1999/xlink}href', face_url)
@@ -159,7 +127,7 @@ class AvatarAdorner:
         self.svg.set('viewBox', '0 0 %.02f %.02f' % (w, h))
 
     def _attach_badge(self):
-        svg_badge = AvatarAdorner.SVG_BADGE.format(
+        svg_badge = SVG_BADGE.format(
            badge_w=self.badge_w, badge_h=self.badge_h,
            label_w=(self.badge_w - self.badge_count_w),
            label_x=(self.badge_w - self.badge_count_w) / 2,
@@ -191,3 +159,10 @@ def register_svg_namespaces():
 
 
 register_svg_namespaces()
+
+
+if __name__ == '__main__':
+    dummy = DummyMaker()
+    legend = dummy.make_legend()
+
+    open('test.svg', 'w').write(legend)

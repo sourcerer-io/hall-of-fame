@@ -196,35 +196,15 @@ class AvatarAdorner:
 class Spacer:
     """Spacer makes static/predefined images."""
     def make_legend(self):
-        self.svg = ElementTree.fromstring(SVG_LEGEND)
+        svg = SVG_LEGEND.format(
+            new_color=Badger.BADGE_COLORS[Badger.NEW],
+            trending_color=Badger.BADGE_COLORS[Badger.TRENDING],
+            top_color=Badger.BADGE_COLORS[Badger.TOP])
+        self.svg = ElementTree.fromstring(svg)
         
-        # Add ledgend badges.
-        badges = [(Badger.NEW, 'weekly'),
-                  (Badger.TRENDING, 'weekly'),
-                  (Badger.TOP, 'all time')]
-        badgers = []
-        for label, value in badges:
-            badger = Badger()
-            badger.make_badge(label, value)
-            badgers.append(badger)
-
-        dx = 40  # A visual margin.
-        max_w = max(b.badge_w for b in badgers) + dx
-        max_label_w = max(b.label_w for b in badgers)
-
-        y = badger.badge_off * 2
-        for badger in badgers:
-            self.svg.append(badger.svg)
-            badger.svg.set('y', '%d' % y)
-            badger.svg.set('x', '%d' % (max_label_w - badger.label_w + dx))
-
-            y += badger.badge_h + badger.badge_off
-
         # Adjust root SVG size.
         view_box = self.svg.get('viewBox')
         _, _, w, h = map(float, view_box.split(' '))
-        if w < max_w:
-            w = max_w
         h += Badger.BADGE_H + Badger.BADGE_OFF  # For consitency with avatars.
         self.svg.set('viewBox', '0 0 %.02f %.02f' % (w, h))
 

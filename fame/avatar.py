@@ -8,7 +8,7 @@ import re
 from urllib.request import urlopen
 from xml.etree import ElementTree
 
-from .svg_templates import SVG_GITHUB, SVG_BADGE, SVG_LEGEND
+from .svg_templates import SVG_GITHUB, SVG_BADGE, SVG_LEGEND, SVG_EMPTY
 
 
 class AvatarError(Exception):
@@ -228,7 +228,7 @@ class Spacer:
         self.svg.set('viewBox', '0 0 %.02f %.02f' % (w, h))
 
     def make_empty(self):
-        pass
+        self.svg = ElementTree.fromstring(SVG_EMPTY)
 
     def get_spacer_svg(self):
         return ElementTree.tostring(self.svg, encoding='unicode')

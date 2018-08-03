@@ -63,9 +63,12 @@ class Glory:
     def _assign_top(self, excluded_users):
         top_guns = []
         max_top_guns = Glory.MAX_ALL - len(excluded_users)
-        for contrib in self.repo.top_contributors[:max_top_guns]:
+        for contrib in self.repo.top_contributors:
+            if not max_top_guns:
+                break
             if contrib.username not in excluded_users:
                 top_guns.append((contrib.username, contrib.num_commits))
+                max_top_guns -= 1
         top_guns.sort(key=lambda v: v[1], reverse=True)
         return top_guns
 

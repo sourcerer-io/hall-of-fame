@@ -15,20 +15,18 @@ class AvatarError(Exception):
         super().__init__(message)
 
 
-# Badge configuration.
-BADGE_H = 50
-BADGE_OFF = 10
-
-# Labels.
-TRENDING = 'trending'
-NEW = 'new'
-TOP = 'top'
-
-# Badge colors.
-BADGE_COLORS = {NEW: '#4CB04F', TRENDING: '#2B95CF', TOP: '#F28F56'}
-
-
 class Badger:
+    BADGE_H = 50
+    BADGE_OFF = 10
+
+    # Labels.
+    TRENDING = 'trending'
+    NEW = 'new'
+    TOP = 'top'
+
+    # Badge colors.
+    BADGE_COLORS = {NEW: '#4CB04F', TRENDING: '#2B95CF', TOP: '#F28F56'}
+
     """Badger makes badges. In case you wonder."""
     def __init__(self):
         # A supercrude way to estimate symbol widths.
@@ -42,15 +40,15 @@ class Badger:
         self.value = ''
         self.badge_w = self.badge_h = 0
         self.label_w = self.value_w = 0
-        self.badge_off = BADGE_OFF
+        self.badge_off = Badger.BADGE_OFF
 
     def make_badge(self, label, value):
-        if label not in [TRENDING, NEW, TOP]:
+        if label not in [Badger.TRENDING, Badger.NEW, Badger.TOP]:
             raise AvatarError('Invalid badge label: %s' % label)
 
         self.label = label
         self.value = str(value)
-        self.value_color = BADGE_COLORS[self.label]
+        self.value_color = Badger.BADGE_COLORS[self.label]
 
         self._estimate_badge_size()
         self._make_badge()
@@ -63,7 +61,7 @@ class Badger:
         self.label_w = self._estimate_string_size(self.label)
         self.value_w = self._estimate_string_size(self.value)
         self.badge_w = self.label_w + self.value_w
-        self.badge_h = BADGE_H
+        self.badge_h = Badger.BADGE_H
 
     def _estimate_string_size(self, s):
         return sum([self.symbols[c] for c in s]) + 20
@@ -87,6 +85,7 @@ class Badger:
 
 
 class AvatarAdorner:
+    """AvatarAdorner adorns avatars with badges."""
     def init_with_face(self, face_url):
         self.svg = ElementTree.fromstring(SVG_GITHUB)
         self._init_face_image()
@@ -106,9 +105,6 @@ class AvatarAdorner:
           badge: Badge type.
           count: Number to print for the badge.
         """
-        if badge not in [TRENDING, NEW, TOP]:
-            raise AvatarError('Invalid badge: %s' % badge)
-
         self.badge = badge
         self.badge_count = count
         self.badger = Badger()

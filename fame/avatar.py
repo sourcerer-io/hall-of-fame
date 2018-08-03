@@ -4,6 +4,7 @@ __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
 import base64
+import re
 from urllib.request import urlopen
 from xml.etree import ElementTree
 
@@ -53,7 +54,18 @@ class Badger:
         self._estimate_badge_size()
         self._make_badge()
 
-    def get_badge_svg_string(self):
+        # Since there can be multiple badges in the same SVG,
+        # let's make sure we have a reasonaly unique URL for clipPath.
+        ns = {'svg': 'http://www.w3.org/2000/svg'}
+        clip_path = self.svg.find('svg:defs/svg:clipPath', namespaces=ns)
+        clip_id = '%s-%s-%s' % (clip_path.get('id'), label, value)
+        clip_id = re.sub('[^a-z0-9]+', '-', clip_id)
+        clip_path.set('id', clip_id)
+
+        clipped_g = self.svg.find('svg:g[@clip-path]', namespaces=ns)
+        clipped_g.set('clip-path', 'url(#%s)' % clip_id)
+
+    def get_svg_string(self):
         return ElementTree.tostring(self.svg, encoding='unicode')
 
     def _estimate_badge_size(self):

@@ -87,29 +87,25 @@ class Glory:
             else:
                 adorner.init_with_face(self.repo.avatars[username])
                 profile_urls.append('https://github.com/' + username)
-            adorner.adorn(badge, num_commits)
 
-            image_path = self._get_image_file_path(i)
-            avatar_svg = adorner.get_avatar_svg()
-            storage.save_file(image_path, avatar_svg, 'image/svg+xml')
+            adorner.adorn(badge, num_commits)
+            self._save_svg(i, adorner.get_avatar_svg())
 
         # Make a legend image and a link.
         spacer = Spacer()
         spacer.make_legend()
-        image_path = self._get_image_file_path(len(everyone))
-        storage.save_file(image_path, spacer.get_spacer_svg(), 'image/svg+xml')
+        self._save_svg(len(everyone), spacer.get_spacer_svg())
         profile_urls.append(Glory.LEGEND_URL)
 
         # Fill up the remaining slots with empty SVGs.
         spacer.make_empty()
         for i in range(len(everyone) + 1, Glory.MAX_ALL + 1):  # +1 for legend.
-            image_path = self._get_image_file_path(i)
-            storage.save_file(
-                image_path, spacer.get_spacer_svg(), 'image/svg+xml')
-        profile_urls.append(Glory.LEGEND_URL)
+            self._save_svg(i, spacer.get_spacer_svg())
+            profile_urls.append(Glory.LEGEND_URL)
 
         # Save the profile link file.
-        storage.save_file(self._get_link_file_path(), '\n'.join(profile_urls))
+        link_path = self._get_link_file_path()
+        storage.save_file(link_path, '\n'.join(profile_urls) + '\n')
 
         # Generate a test HTML.
         f = io.StringIO()
@@ -138,6 +134,10 @@ class Glory:
         url = 'https://sourcerer.io/avatar/' + self.users[github_username]
         return self.users[github_username], url
 
+    def _save_svg(self, num, svg, temp=False):
+        image_path = self._get_image_file_path(num, temp)
+        storage.save_file(image_path, svg, 'image/svg+xml')
+
     def _cleanup(self):
         image_dir = self._get_image_dir()
         storage.remove_subtree(image_dir)
@@ -149,17 +149,18 @@ class Glory:
         test_file = self._get_test_html_path()
         storage.remove_file(test_file)
 
-    def _get_link_file_path(self):
-        return path.join(self._get_repo_dir(), 'links.txt')
+    def _get_link_file_path(self, temp=False):
+        return path.join(self._get_base_dir(temp), 'links.txt')
 
-    def _get_test_html_path(self):
-        return path.join(self._get_repo_dir(), 'test.html')
+    def _get_test_html_path(self, temp=False):
+        return path.join(self._get_base_dir(temp), 'test.html')
 
-    def _get_image_file_path(self, num):
-        return path.join(self._get_image_dir(), '%d.svg' % num)
+    def _get_image_file_path(self, num, temp=False):
+        return path.join(self._get_image_dir(temp), '%d.svg' % num)
 
-    def _get_image_dir(self):
-        return path.join(self._get_repo_dir(), 'images')
+    def _get_image_dir(self, temp=False):
+        return path.join(self._get_base_dir(temp), 'images')
 
-    def _get_repo_dir(self):
-        return path.join(self.repo.user, self.repo.owner, self.repo.name)
+    def _get_base_dir(self, temp):
+        repo_dir = path.join(self.repo.user, self.repo.owner, self.repo.name)
+        return path.join(repo_dir, 'temp') if temp else repo_dir

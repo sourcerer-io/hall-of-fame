@@ -40,6 +40,7 @@ class Glory:
             top_guns = self._assign_top(excluded_users)
 
         self._issue_badges(trending, new_faces, top_guns)
+        self._install()
         print('i Glorified %s:%s/%s' % (repo.user, repo.owner, repo.name))
 
     def _assign_trending_and_new(self):
@@ -104,7 +105,7 @@ class Glory:
             profile_urls.append(Glory.LEGEND_URL)
 
         # Save the profile link file.
-        link_path = self._get_link_file_path()
+        link_path = self._get_link_file_path(temp=True)
         storage.save_file(link_path, '\n'.join(profile_urls) + '\n')
 
         # Generate a test HTML.
@@ -112,7 +113,7 @@ class Glory:
         for i in range(len(profile_urls)):
             h = '<a href="%s"><img height="68px" src="images/%d.svg"></a>\n'
             f.write(h % (profile_urls[i], i))
-        test_html_path = self._get_test_html_path()
+        test_html_path = self._get_test_html_path(temp=True)
         storage.save_file(test_html_path, f.getvalue(), 'text/html')
         print('i Saved test HTML to %s' % test_html_path)
 
@@ -134,20 +135,37 @@ class Glory:
         url = 'https://sourcerer.io/avatar/' + self.users[github_username]
         return self.users[github_username], url
 
-    def _save_svg(self, num, svg, temp=False):
-        image_path = self._get_image_file_path(num, temp)
+    def _save_svg(self, num, svg):
+        image_path = self._get_image_file_path(num, temp=True)
         storage.save_file(image_path, svg, 'image/svg+xml')
 
     def _cleanup(self):
-        image_dir = self._get_image_dir()
-        storage.remove_subtree(image_dir)
+        temp_dir = self._get_base_dir(temp=True)
+        storage.remove_subtree(temp_dir)
+        storage.make_dirs(temp_dir)
+
+        image_dir = self._get_image_dir(temp=True)
         storage.make_dirs(image_dir)
 
-        link_file = self._get_link_file_path()
-        storage.remove_file(link_file)
+    def _install(self):
+        # Never delete anything from base dir so that serving never fails.
+        # Since we always make the same number of entries, we simply overwrite.
+        temp_image_dir = self._get_image_dir(temp=True)
+        image_dir = self._get_image_dir(temp=False)
 
-        test_file = self._get_test_html_path()
-        storage.remove_file(test_file)
+        for filename in storage.list_dir(temp_image_dir):
+            storage.move_file(path.join(temp_image_dir, filename),
+                              path.join(image_dir, filename))
+
+        temp_link_file = self._get_link_file_path(temp=True)
+        link_file = self._get_link_file_path(temp=False)
+        storage.move_file(temp_link_file, link_file)
+
+        temp_html_file = self._get_test_html_path(temp=True)
+        html_file = self._get_test_html_path(temp=False)
+        storage.move_file(temp_html_file, html_file)
+
+        storage.remove_subtree(self._get_base_dir(temp=True))
 
     def _get_link_file_path(self, temp=False):
         return path.join(self._get_base_dir(temp), 'links.txt')

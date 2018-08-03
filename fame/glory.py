@@ -7,10 +7,14 @@ import io
 from os import path
 
 from . import storage
-from .avatar import AvatarAdorner
+from .avatar import AvatarAdorner, Spacer
 
 
 class Glory:
+    MAX_NEW = 3       # Max number of new faces.
+    MAX_TRENDING = 4  # Max number of trending contributors.
+    MAX_ALL = 7       # Max number of entries.
+
     def __init__(self):
         # Load Sourcerer / GitHub mapping. This is temporary.
         # TODO(sergey): Replace with a call to Sourcerer API.
@@ -29,34 +33,35 @@ class Glory:
         trending, new_faces = self._assign_trending_and_new()
 
         top_guns = []
-        if not trending and not new_faces:  # We need to show SOMETHING!
-            top_guns = self._assign_top()
+        if len(trending) + len(new_faces) < Glory.MAX_ALL:
+            top_guns = self._assign_top(set(trending + new_faces))
 
         self._issue_badges(trending, new_faces, top_guns)
         print('i Glorified %s:%s/%s' % (repo.user, repo.owner, repo.name))
 
     def _assign_trending_and_new(self):
-        contributors = self._count_commits()
-        new_contributors = set(self.repo.new_contributors)
+        contribs = self._count_commits()
+        new_contribs = set(self.repo.new_contributors)
 
         trending = []
         new_faces = []
 
-        # Up to 3 new faces, up to 5 trending.
-        for username, num_commits in contributors:
-            if username in new_contributors and len(new_faces) < 3:
+        for username, num_commits in contribs:
+            if username in new_contribs and len(new_faces) < Glory.MAX_NEW:
                 new_faces.append((username, num_commits))
-            elif len(trending) < 5:
+            elif len(trending) < Glory.MAX_TRENDING:
                 trending.append((username, num_commits))
             else:
                 break
 
         return trending, new_faces
 
-    def _assign_top(self):
+    def _assign_top(self, excluded_users):
         top_guns = []
-        for contributor in self.repo.top_contributors[:5]:
-            top_guns.append((contributor.username, contributor.num_commits))
+        max_top_guns = Glory.MAX_ALL - len(excluded_users)
+        for contrib in self.repo.top_contributors[:max_top_guns]:
+            if contrib.username not in excluded_users:
+                top_guns.append((contrib.username, contrib.num_commits))
         top_guns.sort(key=lambda v: v[1], reverse=True)
         return top_guns
 
@@ -85,7 +90,14 @@ class Glory:
             avatar_svg = adorner.get_avatar_svg()
             storage.save_file(image_path, avatar_svg, 'image/svg+xml')
 
+        # Make a legend image.
+        spacer = Spacer()
+        spacer.make_legend()
+        image_path = path.join(self._get_image_dir(), '%d.svg' % len(everyone))
+        storage.save_file(image_path, spacer.get_spacer_svg(), 'image/svg+xml')
+
         # Save the profile link file.
+        profile_urls.append('https://github.com/sourcerer-io/hall-of-fame')
         storage.save_file(self._get_link_file_path(), '\n'.join(profile_urls))
 
         # Generate a test HTML.

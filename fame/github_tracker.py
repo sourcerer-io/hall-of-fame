@@ -175,7 +175,7 @@ class RepoTracker:
         r = self._open_github_url(url)
         contributors = self._get_json(r)
 
-        for contrib in contributors[:5]:  # We just want top 5.
+        for contrib in contributors[:10]:
             committer = repo.top_contributors.add()
             committer.username = contrib['login']
             committer.num_commits = contrib['contributions']

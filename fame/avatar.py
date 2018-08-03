@@ -208,14 +208,15 @@ class Spacer:
             badger.make_badge(label, value)
             badgers.append(badger)
 
-        max_w = max(b.badge_w for b in badgers)
+        dx = 40  # A visual margin.
+        max_w = max(b.badge_w for b in badgers) + dx
         max_label_w = max(b.label_w for b in badgers)
 
-        y = 0
+        y = badger.badge_off * 2
         for badger in badgers:
             self.svg.append(badger.svg)
             badger.svg.set('y', '%d' % y)
-            badger.svg.set('x', '%d' % (max_label_w - badger.label_w))
+            badger.svg.set('x', '%d' % (max_label_w - badger.label_w + dx))
 
             y += badger.badge_h + badger.badge_off
 

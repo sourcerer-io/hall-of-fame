@@ -8,7 +8,7 @@ import re
 from urllib.request import urlopen
 from xml.etree import ElementTree
 
-from .svg_templates import SVG_GITHUB, SVG_BADGE
+from .svg_templates import SVG_GITHUB, SVG_BADGE, SVG_LEGEND
 
 
 class AvatarError(Exception):
@@ -191,6 +191,47 @@ class AvatarAdorner:
 
         self.svg.set('viewBox', '0 0 %.02f %.02f' % (w, h))
         badge_svg.set('y', '%.02f' % (face_h + self.badger.badge_off))
+
+
+class Spacer:
+    """Spacer makes static/predefined images."""
+    def make_legend(self):
+        self.svg = ElementTree.fromstring(SVG_LEGEND)
+        
+        # Add ledgend badges.
+        badges = [(Badger.NEW, 'weekly'),
+                  (Badger.TRENDING, 'weekly'),
+                  (Badger.TOP, 'all time')]
+        badgers = []
+        for label, value in badges:
+            badger = Badger()
+            badger.make_badge(label, value)
+            badgers.append(badger)
+
+        max_w = max(b.badge_w for b in badgers)
+        max_label_w = max(b.label_w for b in badgers)
+
+        y = 0
+        for badger in badgers:
+            self.svg.append(badger.svg)
+            badger.svg.set('y', '%d' % y)
+            badger.svg.set('x', '%d' % (max_label_w - badger.label_w))
+
+            y += badger.badge_h + badger.badge_off
+
+        # Adjust root SVG size.
+        view_box = self.svg.get('viewBox')
+        _, _, w, h = map(float, view_box.split(' '))
+        if w < max_w:
+            w = max_w
+        h += Badger.BADGE_H + Badger.BADGE_OFF  # For consitency with avatars.
+        self.svg.set('viewBox', '0 0 %.02f %.02f' % (w, h))
+
+    def make_empty(self):
+        pass
+
+    def get_spacer_svg(self):
+        return ElementTree.tostring(self.svg, encoding='unicode')
 
 
 def register_svg_namespaces():

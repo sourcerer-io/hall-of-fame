@@ -39,3 +39,11 @@ SVG_BADGE = """
     <text x="{value_x}" y="{value_y}">{value_text}</text>
   </g>
 </svg>"""
+
+# Legend.
+SVG_LEGEND = """
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    viewBox="0 0 200 200">
+</svg>
+"""

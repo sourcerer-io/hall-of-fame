@@ -37,6 +37,13 @@ class Badger:
         self.symbols.update({s: 5 for s in 'il'})
         self.symbols.update({s: 30 for s in 'mw'})
 
+        self.svg = None
+        self.label = ''
+        self.value = ''
+        self.badge_w = self.badge_h = 0
+        self.label_w = self.value_w = 0
+        self.badge_off = BADGE_OFF
+
     def make_badge(self, label, value):
         if label not in [TRENDING, NEW, TOP]:
             raise AvatarError('Invalid badge label: %s' % label)
@@ -48,14 +55,8 @@ class Badger:
         self._estimate_badge_size()
         self._make_badge()
 
-    def get_badge_svg_dom(self):
-        return self.svg
-
     def get_badge_svg_string(self):
         return ElementTree.tostring(self.svg, encoding='unicode')
-
-    def get_badge_size(self):
-        return self.badge_w, self.badge_h
 
     def _estimate_badge_size(self):
         # All sizes are relative units.
@@ -110,13 +111,12 @@ class AvatarAdorner:
 
         self.badge = badge
         self.badge_count = count
+        self.badger = Badger()
 
         self._embed_face()
-        self._init_sizes_and_colors()
+        self._init_sizes()
         self._nest_svg()
-        self._estimate_badge_size()
-        self._make_space_for_badge()
-        self._attach_badge()
+        self._make_badge()
 
     def get_avatar_svg(self):
         return ElementTree.tostring(self.svg, encoding='unicode')
@@ -144,13 +144,11 @@ class AvatarAdorner:
         self.face_image.set('{http://www.w3.org/1999/xlink}href', data_url)
         print('i Embedded JPEG %s' % face_url)
 
-    def _init_sizes_and_colors(self):
+    def _init_sizes(self):
         view_box = self.svg.get('viewBox')
         if not view_box:
             raise AvatarError('No viewBox found')
         _, _, self.face_w, self.face_h = map(float, view_box.split(' '))
-
-        self.count_color = BADGE_COLORS[self.badge]
 
     def _nest_svg(self):
         """Puts the input SVG under a nested SVG tag."""
@@ -163,48 +161,28 @@ class AvatarAdorner:
         face_svg.set('height', '%.02f' % self.face_h)
         self.face_svg = face_svg
 
-    def _estimate_badge_size(self):
-        # All sizes are relative units.
-        label_widths = {TOP: 90, NEW: 90, TRENDING: 146}
-        self.badge_count_w = len(str(self.badge_count)) * 20 + 20
-        self.badge_w = label_widths[self.badge] + self.badge_count_w
-        self.badge_h = BADGE_H
-        self.badge_off = BADGE_OFF
+    def _make_badge(self):
+        self.badger.make_badge(self.badge, self.badge_count)
+        badge_svg = self.badger.svg
+        self.svg.append(badge_svg)
 
-    def _make_space_for_badge(self):
-        """Makes space in the input SVG for the badge."""
-        w, h = self.face_w, self.face_h
-        h += self.badge_h + self.badge_off
+        # Make space for the badge and position the face and the badge.
+        face_w, face_h = self.face_w, self.face_h
+        badge_w, badge_h = self.badger.badge_w, self.badger.badge_h
 
-        if self.badge_w > w:
-            # Badge is wider than face, center face with respect to the badge.
-            self.face_svg.set('x', '%.02f' % ((self.badge_w - w) / 2))
-            w = self.badge_w
+        w = face_w
+        h = face_h + badge_h + self.badger.badge_off
+
+        if badge_w > face_w:
+            # Badge is wider than face, center face with respect to badge.
+            self.face_svg.set('x', '%.02f' % ((badge_w - face_w) / 2))
+            w = badge_w
+        else:
+            # Face is wider than badge, center badge with respect to face.
+            badge_svg.set('x', '%.02f' % ((face_w - badge_w) / 2))
 
         self.svg.set('viewBox', '0 0 %.02f %.02f' % (w, h))
-
-    def _attach_badge(self):
-        svg_badge = SVG_BADGE.format(
-           badge_w=self.badge_w, badge_h=self.badge_h,
-           label_w=(self.badge_w - self.badge_count_w),
-           label_x=(self.badge_w - self.badge_count_w) / 2,
-           label_y=self.badge_h - 13,
-           label_text=self.badge,
-           count_x=self.badge_w - self.badge_count_w / 2,
-           count_y=self.badge_h - 13,
-           count_w=self.badge_count_w,
-           count_text=str(self.badge_count), count_color=self.count_color)
-        self.badge_svg = ElementTree.fromstring(svg_badge)
-        self.svg.append(self.badge_svg)
-
-        self.badge_svg.set('y', '%.02f' % (self.face_h + self.badge_off))
-        if self.badge_w < self.face_w:
-            x = (self.face_w - self.badge_w) / 2
-            self.badge_svg.set('x', '%.02f' % x)
-        self.badge_svg.set('width', '%.02f' % self.badge_w)
-        self.badge_svg.set('height', '%.02f' % self.badge_h)
-        self.badge_svg.set(
-            'viewBox', '0 0 %.02f %.02f' % (self.badge_w, self.badge_h))
+        badge_svg.set('y', '%.02f' % (face_h + self.badger.badge_off))
 
 
 def register_svg_namespaces():

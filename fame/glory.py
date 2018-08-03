@@ -15,6 +15,8 @@ class Glory:
     MAX_TRENDING = 4  # Max number of trending contributors.
     MAX_ALL = 7       # Max number of entries.
 
+    LEGEND_URL = 'https://github.com/sourcerer-io/hall-of-fame'
+
     def __init__(self):
         # Load Sourcerer / GitHub mapping. This is temporary.
         # TODO(sergey): Replace with a call to Sourcerer API.
@@ -87,18 +89,26 @@ class Glory:
                 profile_urls.append('https://github.com/' + username)
             adorner.adorn(badge, num_commits)
 
-            image_path = path.join(self._get_image_dir(), '%d.svg' % i)
+            image_path = self._get_image_file_path(i)
             avatar_svg = adorner.get_avatar_svg()
             storage.save_file(image_path, avatar_svg, 'image/svg+xml')
 
-        # Make a legend image.
+        # Make a legend image and a link.
         spacer = Spacer()
         spacer.make_legend()
-        image_path = path.join(self._get_image_dir(), '%d.svg' % len(everyone))
+        image_path = self._get_image_file_path(len(everyone))
         storage.save_file(image_path, spacer.get_spacer_svg(), 'image/svg+xml')
+        profile_urls.append(Glory.LEGEND_URL)
+
+        # Fill up the remaining slots with empty SVGs.
+        spacer.make_empty()
+        for i in range(len(everyone) + 1, Glory.MAX_ALL + 1):  # +1 for legend.
+            image_path = self._get_image_file_path(i)
+            storage.save_file(
+                image_path, spacer.get_spacer_svg(), 'image/svg+xml')
+        profile_urls.append(Glory.LEGEND_URL)
 
         # Save the profile link file.
-        profile_urls.append('https://github.com/sourcerer-io/hall-of-fame')
         storage.save_file(self._get_link_file_path(), '\n'.join(profile_urls))
 
         # Generate a test HTML.
@@ -141,6 +151,9 @@ class Glory:
 
     def _get_test_html_path(self):
         return path.join(self._get_repo_dir(), 'test.html')
+
+    def _get_image_file_path(self, num):
+        return path.join(self._get_image_dir(), '%d.svg' % num)
 
     def _get_image_dir(self):
         return path.join(self._get_repo_dir(), 'images')

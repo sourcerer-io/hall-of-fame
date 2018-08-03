@@ -10,12 +10,12 @@ SVG_GITHUB = """
     viewBox="0 0 200 200">
   <defs>
     <clipPath id="circle-clip">
-      <circle cx="100" cy="100" r="85"/>
+      <circle cx="100" cy="100" r="90"/>
     </clipPath>
   </defs>
   <image clip-path="url(#circle-clip)"
       width="200" height="200" xlink:href=""/>
-  <circle cx="100" cy="100" r="95"
+  <circle cx="100" cy="100" r="100"
       stroke="#c1c5ca" stroke-width="1.5" fill="transparent" />
 </svg>"""
 

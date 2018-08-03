@@ -34,7 +34,8 @@ class Glory:
 
         top_guns = []
         if len(trending) + len(new_faces) < Glory.MAX_ALL:
-            top_guns = self._assign_top(set(trending + new_faces))
+            excluded_users = set([v[0] for v in trending + new_faces])
+            top_guns = self._assign_top(excluded_users)
 
         self._issue_badges(trending, new_faces, top_guns)
         print('i Glorified %s:%s/%s' % (repo.user, repo.owner, repo.name))
@@ -66,8 +67,8 @@ class Glory:
         return top_guns
 
     def _issue_badges(self, trending, new_faces, top_guns):
-        everyone = ([(u, n, 'trending') for u, n in trending] +
-                    [(u, n, 'new') for u, n in new_faces] +
+        everyone = ([(u, n, 'new') for u, n in new_faces] +
+                    [(u, n, 'trending') for u, n in trending] +
                     [(u, n, 'top') for u, n in top_guns])
 
         # Generate badges.

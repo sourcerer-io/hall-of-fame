@@ -26,6 +26,13 @@ def make_dirs(path):
     return storage.make_dirs(path)
 
 
+def move_file(from_path, to_path):
+    """Moves a file."""
+    if not storage:
+        error('Storage not initialized')
+    return storage.move_file(from_path, to_path)
+
+
 def remove_file(path):
     """Removes a file."""
     if not storage:

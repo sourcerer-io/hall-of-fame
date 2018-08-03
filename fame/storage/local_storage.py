@@ -17,6 +17,14 @@ class LocalStorage(StorageBase):
         full_path = os.path.join(self.work_dir, path)
         os.makedirs(full_path, exist_ok=True)
 
+    def move_file(self, from_path, to_path):
+        try:
+            os.rename(os.path.join(self.work_dir, from_path),
+                      os.path.join(self.work_dir, to_path))
+            return True
+        except OSError:
+            return False
+
     def remove_file(self, path):
         try:
             os.remove(path)

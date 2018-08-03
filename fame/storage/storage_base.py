@@ -8,6 +8,9 @@ class StorageBase:
     def make_dirs(self, path):
         pass
 
+    def move_file(self, from_path, to_path):
+        pass
+
     def remove_file(self, path):
         pass
 

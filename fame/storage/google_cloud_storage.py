@@ -19,6 +19,13 @@ class GoogleCloudStorage(StorageBase):
             path += '/'
         self.bucket.blob(path)
 
+    def move_file(self, from_path, to_path):
+        blob = self.bucket.get_blob(from_path)
+        if not blob:
+            return False
+        self.bucket.rename_blob(blob, to_path)
+        return True
+
     def remove_file(self, path):
         try:
             self.bucket.delete_blob(path)

@@ -146,6 +146,9 @@ class Glory:
         link_file = self._get_link_file_path()
         storage.remove_file(link_file)
 
+        test_file = self._get_test_html_path()
+        storage.remove_file(test_file)
+
     def _get_link_file_path(self):
         return path.join(self._get_repo_dir(), 'links.txt')
 

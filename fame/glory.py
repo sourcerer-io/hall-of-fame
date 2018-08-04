@@ -124,7 +124,6 @@ class Glory:
             f.write(h % (profile_urls[i], i))
         test_html_path = self._get_test_html_path(temp=True)
         storage.save_file(test_html_path, f.getvalue(), 'text/html')
-        print('i Saved test HTML to %s' % test_html_path)
 
     def _count_commits(self):
         contributors = {}

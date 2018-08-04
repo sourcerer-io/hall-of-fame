@@ -3,8 +3,10 @@
 __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
+import json
 import io
 from os import path
+from urllib.request import urlopen
 
 from . import storage
 from .avatar import AvatarAdorner, Spacer
@@ -17,15 +19,18 @@ class Glory:
 
     LEGEND_URL = 'https://github.com/sourcerer-io/hall-of-fame'
 
-    def __init__(self):
-        # Load Sourcerer / GitHub mapping. This is temporary.
-        # TODO(sergey): Replace with a call to Sourcerer API.
-        data = storage.load_file('users.csv')
-        lines = data.strip().split('\n')
-        self.users = {}
-        for line in lines:
-            github_user, sourcerer_user = line.strip().split(',')
-            self.users[github_user] = sourcerer_user
+    def __init__(self, sourcerer_origin, sourcerer_api_origin=None):
+        """Creates an instance of Glory.
+
+        Args:
+          sourcerer_origin: Origin for Sourcerer URLs, e.g. avatars.
+          sourcerer_api_origin: Origin for Sourcerer API.
+        """
+        self.sourcerer_origin = sourcerer_origin
+        self.sourcerer_api_origin = sourcerer_api_origin
+        if not self.sourcerer_api_origin:
+            self.sourcerer_api_origin = self.sourcerer_origin
+        self.user_mapping = {}
 
     def make(self, repo):
         """Makes hall of fame for a repo, a protobuf."""
@@ -76,6 +81,7 @@ class Glory:
         everyone = ([(u, n, 'new') for u, n in new_faces] +
                     [(u, n, 'trending') for u, n in trending] +
                     [(u, n, 'top') for u, n in top_guns])
+        self._map_users_to_sourcerer([u for u, _, _, in everyone])
 
         # Generate badges.
         profile_urls = []
@@ -130,13 +136,25 @@ class Glory:
 
         return contributors
 
+    def _map_users_to_sourcerer(self, github_usernames):
+        url = self._get_sourcerer_mapping_url(github_usernames)
+        data = urlopen(url).read().decode()
+        self.user_mapping = json.loads(data)
+
     def _map_to_sourcerer(self, github_username):
-        # TODO(sergey): Replace with a call to backend.
-        if github_username not in self.users:
+        if github_username not in self.user_mapping:
             return None, None
 
-        url = 'https://sourcerer.io/avatar/' + self.users[github_username]
-        return self.users[github_username], url
+        sourcerer_username = self.user_mapping[github_username]
+        url = self._get_sourcerer_avatar_url(sourcerer_username)
+        return self.user_mapping[github_username], url
+
+    def _get_sourcerer_mapping_url(self, github_usernames):
+        return '%s/api/face/hof/match?names=%s' % (
+            self.sourcerer_api_origin, ','.join(github_usernames))
+
+    def _get_sourcerer_avatar_url(self, sourcerer_username):
+        return '%s/avatar/%s' % (self.sourcerer_origin, sourcerer_username)
 
     def _save_svg(self, num, svg):
         image_path = self._get_image_file_path(num, temp=True)

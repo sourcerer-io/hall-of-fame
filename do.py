@@ -41,6 +41,11 @@ def parse_args():
     parser.add_argument('--gcloud_bucket', type=str,
                         help='Google cloud bucket to store data')
     parser.add_argument('--token', type=str, help='Github API token')
+    parser.add_argument('--sourcerer_origin', type=str, 
+                        default='https://sourcerer.io',
+                        help='Sourcerer origin')
+    parser.add_argument('--sourcerer_api_origin', type=str,
+                        help='Sourcerer API origin')
     args = parser.parse_args()
 
     if is_repo_command(args.command):
@@ -50,6 +55,8 @@ def parse_args():
             parser.error('Must provide repo owner')
         if not args.repo:
             parser.error('Must provide repo name')
+        if not args.sourcerer_origin:
+            parser.error('Must provide Sourcerer origin')
 
     if args.work_dir and not os.path.isdir(args.work_dir):
         parser.error('--work_dir must be an existing directory')
@@ -87,7 +94,7 @@ def main():
             print(repo)
         elif args.command == 'glorify':
             repo = tracker.load()
-            glory = Glory()
+            glory = Glory(args.sourcerer_origin, args.sourcerer_api_origin)
             glory.make(repo)
     except TrackerError as e:
         print('e %s' % str(e))

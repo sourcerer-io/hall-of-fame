@@ -126,6 +126,10 @@ def fame_refresh(data, context):
         error_if_false(Refresh.is_valid(command),
                        'Invalid command %s' % command)
 
+        sourcerer_origin = os.environ.get('sourcerer_origin', None)
+        error_if_false(sourcerer_origin, 'Sourcerer origin is required')
+        sourcerer_api_origin = os.environ.get('sourcerer_api_origin', None)
+
         configure_storage()
         topic = get_fame_pubsub_topic()  # Let it fail early.
 
@@ -150,7 +154,7 @@ def fame_refresh(data, context):
             tracker.configure(user, owner, repo)
             tracker.update()
 
-            glory = Glory()
+            glory = Glory(sourcerer_origin, sourcerer_api_origin)
             glory.make(tracker.load())
 
     except Exception as e:

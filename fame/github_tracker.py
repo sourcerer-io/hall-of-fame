@@ -24,18 +24,35 @@ class TrackerError(Exception):
 
 
 class RepoTracker:
-    def configure(self, user, owner, repo, github_token=None):
+    def configure(self, user, owner, repo,
+                  sourcerer_api_origin=None,
+                  sourcerer_api_secret=None,
+                  github_token=None):
         """Sets tracker to a repo.
+
+        If you supply API origin, you will also need API secret. API is used
+        if provided, and if github token was not directly supplied. In case,
+        there is neither API nor token supplied, anonymous access to GitHub
+        is used.
 
         Args:
           user: GitHub user who set up tracking for this repo.
           owner: GitHub repo owner.
           repo: GitHub repo, repo URL is github.com/:owner/:repo.
+          sourcerer_api_origin: API origin, used to fetch GitHub token.
+          sourcerer_api_secret: Secret for API authentication.
+          github_token: GitHub token supplied directly.
         """
         self.user = user
         self.owner = owner
         self.repo = repo
         self.github_token = github_token
+        if not github_token and sourcerer_api_origin:
+            if not sourcerer_api_secret:
+                raise TrackerError('Sourcerer API secret required')
+
+            self.github_token = self._load_github_token(
+                sourcerer_api_origin, sourcerer_api_secret)
 
     def error(self, message):
         raise TrackerError(
@@ -111,6 +128,20 @@ class RepoTracker:
 
         self._save(repo)
         print('i Updated repo %s:%s/%s' % (self.user, self.owner, self.repo))
+
+    def _load_github_token(self, sourcerer_api_origin, sourcerer_api_secret):
+        try:
+            PATH = 'api/face/hof/token'
+            args = 'username=%s&provider=github' % self.user
+            url = '%s/%s?%s' % (sourcerer_api_origin, PATH, args)
+            headers = {'Authorization': sourcerer_api_secret}
+            request = Request(url, None, headers=headers)
+            response = urlopen(request)
+            data = self._get_json(response)
+            return data['token']
+        except HTTPError as e:
+            print('e Failed to fetch GitHub API token: %s' % e.reason)
+            raise
 
     def _get_repo_path(self):
         return path.join(self._get_repo_dir(), 'repo')
@@ -249,6 +280,6 @@ class RepoTracker:
             print('e %s. API limit?' % e.reason)
             raise
 
-    def _get_json(self, request):
-        data = request.read().decode()
+    def _get_json(self, response):
+        data = response.read().decode()
         return json.loads(data)

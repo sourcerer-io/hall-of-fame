@@ -129,6 +129,7 @@ def fame_refresh(data, context):
         sourcerer_origin = os.environ.get('sourcerer_origin', None)
         error_if_false(sourcerer_origin, 'Sourcerer origin is required')
         sourcerer_api_origin = os.environ.get('sourcerer_api_origin', None)
+        sourcerer_api_secret = os.environ.get('sourcerer_api_secret', None)
 
         configure_storage()
         topic = get_fame_pubsub_topic()  # Let it fail early.
@@ -151,7 +152,9 @@ def fame_refresh(data, context):
             error_if_false(repo, 'Repo is required')
 
             tracker = RepoTracker()
-            tracker.configure(user, owner, repo)
+            tracker.configure(user, owner, repo,
+                              sourcerer_api_origin=sourcerer_api_origin,
+                              sourcerer_api_secret=sourcerer_api_secret)
             tracker.update()
 
             glory = Glory(sourcerer_origin, sourcerer_api_origin)

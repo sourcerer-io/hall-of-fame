@@ -16,7 +16,7 @@ import argparse
 import os.path
 
 import fame.storage
-from fame.github_tracker import RepoTracker, TrackerError
+from fame.github_tracker import RepoTracker
 from fame.glory import Glory
 
 
@@ -41,11 +41,13 @@ def parse_args():
     parser.add_argument('--gcloud_bucket', type=str,
                         help='Google cloud bucket to store data')
     parser.add_argument('--token', type=str, help='Github API token')
-    parser.add_argument('--sourcerer_origin', type=str, 
+    parser.add_argument('--sourcerer_origin', type=str,
                         default='https://sourcerer.io',
                         help='Sourcerer origin')
     parser.add_argument('--sourcerer_api_origin', type=str,
                         help='Sourcerer API origin')
+    parser.add_argument('--sourcerer_api_secret', type=str,
+                        help='Sourcerer API secret')
     args = parser.parse_args()
 
     if is_repo_command(args.command):
@@ -75,11 +77,14 @@ def main():
     elif args.gcloud_bucket:
         fame.storage.configure_for_google_cloud(args.gcloud_bucket)
 
-    tracker = RepoTracker()
-    if is_repo_command(args.command):
-        tracker.configure(args.user, args.owner, args.repo, args.token)
-
     try:
+        tracker = RepoTracker()
+        if is_repo_command(args.command):
+            tracker.configure(args.user, args.owner, args.repo,
+                              args.sourcerer_api_origin,
+                              args.sourcerer_api_secret,
+                              args.token)
+
         if args.command == 'add':
             tracker.add()
         elif args.command == 'remove':
@@ -96,7 +101,7 @@ def main():
             repo = tracker.load()
             glory = Glory(args.sourcerer_origin, args.sourcerer_api_origin)
             glory.make(repo)
-    except TrackerError as e:
+    except Exception as e:
         print('e %s' % str(e))
 
 

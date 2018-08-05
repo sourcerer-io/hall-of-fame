@@ -201,7 +201,7 @@ class Spacer:
             trending_color=Badger.BADGE_COLORS[Badger.TRENDING],
             top_color=Badger.BADGE_COLORS[Badger.TOP])
         self.svg = ElementTree.fromstring(svg)
-        
+
         # Adjust root SVG size.
         view_box = self.svg.get('viewBox')
         _, _, w, h = map(float, view_box.split(' '))

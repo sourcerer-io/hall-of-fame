@@ -16,20 +16,28 @@ PORT = 8000
 class APIHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         parts = urlparse(self.path)
-        if parts.path == '/api/face/hof/match':
-            qs = parse_qs(parts.query)
-            usernames = qs['names'][0].split(',')
+        qs = parse_qs(parts.query)
+        resp = {}
 
-            resp = {}
+        if parts.path == '/api/face/hof/match':
+            usernames = qs['names'][0].split(',')
             for u in usernames:
                 if u in user_mapping:
                     resp[u] = user_mapping[u]
-            data = bytes(json.dumps(resp), 'utf-8')
 
-            self._set_headers()
-            self.wfile.write(data)
+        elif parts.path == '/api/face/hof/token':
+            if 'Authorization' not in self.headers:
+                self.send_error(403)
+                return
+            resp['token'] = github_token
+
         else:
             self.send_error(404)
+            return
+
+        data = bytes(json.dumps(resp), 'utf-8')
+        self._set_headers()
+        self.wfile.write(data)
 
     def _set_headers(self):
         self.send_response(200)
@@ -52,13 +60,18 @@ def parse_args():
     parser.add_argument('--port', type=int, default=8000, help='Server port')
     parser.add_argument('--mapping', type=str, default='users.txt',
                         help='GitHub to Sourcerer user mapping file')
+    parser.add_argument('--github_token', type=str,
+                        help='GitHub token to serve')
     args = parser.parse_args()
     return args
+
 
 if __name__ == '__main__':
     args = parse_args()
 
     user_mapping = load_user_mapping(args.mapping)
+    github_token = args.github_token
+
     print('i Loaded user mapping from %s' % args.mapping)
 
     with socketserver.TCPServer(("", PORT), APIHandler) as httpd:

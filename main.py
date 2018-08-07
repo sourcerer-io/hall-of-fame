@@ -8,6 +8,7 @@ import os
 import flask
 from google.cloud import pubsub
 
+import fame.ssl_hack
 import fame.storage
 from fame.github_tracker import RepoTracker
 from fame.glory import Glory
@@ -130,6 +131,8 @@ def fame_refresh(data, context):
         error_if_false(sourcerer_origin, 'Sourcerer origin is required')
         sourcerer_api_origin = os.environ.get('sourcerer_api_origin', None)
         sourcerer_api_secret = os.environ.get('sourcerer_api_secret', None)
+        if os.environ.get('no_ssl_host_check', None) == '1':
+            fame.ssl_hack.disable_ssl_host_check()
 
         configure_storage()
         topic = get_fame_pubsub_topic()  # Let it fail early.

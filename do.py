@@ -16,6 +16,7 @@ import argparse
 import os.path
 
 import fame.storage
+import fame.ssl_hack
 from fame.github_tracker import RepoTracker
 from fame.glory import Glory
 
@@ -48,6 +49,9 @@ def parse_args():
                         help='Sourcerer API origin')
     parser.add_argument('--sourcerer_api_secret', type=str,
                         help='Sourcerer API secret')
+    parser.add_argument('--no_ssl_host_check', action='store_true',
+                        default=False,
+                        help='Disable SSL host checks, useful for debugging')
     args = parser.parse_args()
 
     if is_repo_command(args.command):
@@ -71,6 +75,9 @@ def parse_args():
 
 def main():
     args = parse_args()
+
+    if args.no_ssl_host_check:
+        fame.ssl_hack.disable_ssl_host_check()
 
     if args.work_dir:
         fame.storage.configure_for_local(args.work_dir)

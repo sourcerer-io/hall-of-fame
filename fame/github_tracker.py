@@ -55,8 +55,7 @@ class RepoTracker:
                 sourcerer_api_origin, sourcerer_api_secret)
 
     def error(self, message):
-        raise TrackerError(
-            '%s %s:%s/%s' % (message, self.user, self.owner, self.repo))
+        raise TrackerError('%s %s' % (message, self._repo_str()))
 
     def add(self):
         """Adds a repo to track.
@@ -70,7 +69,7 @@ class RepoTracker:
         if storage.file_exists(repo_path):
             self.error('Repo exists')
         self._save(repo)
-        print('i Added repo %s:%s/%s' % (self.user, self.owner, self.repo))
+        print('i Added repo %s' % (self._repo_str()))
 
     def remove(self):
         """Removes GitHub repo from tracking."""
@@ -87,7 +86,7 @@ class RepoTracker:
         user_dir = self._get_user_dir()
         if not storage.list_dir(user_dir):
             storage.remove_subtree(user_dir)
-        print('i Removed repo %s:%s/%s' % (self.user, self.owner, self.repo))
+        print('i Removed repo %s' % (self._repo_str()))
 
     @staticmethod
     def list(user=None):
@@ -117,17 +116,30 @@ class RepoTracker:
 
     def update(self):
         repo = self.load()
-        avatars = dict(repo.avatars)
-        self._update_latest_commits(repo, avatars)
-        self._update_top_contributors(repo, avatars)
-        self._update_new_contributors(repo)
+        try:
+            avatars = dict(repo.avatars)
+            self._update_latest_commits(repo, avatars)
+            self._update_top_contributors(repo, avatars)
+            self._update_new_contributors(repo)
 
-        repo.ClearField('avatars')
-        for username, avatar in avatars.items():
-            repo.avatars[username] = avatar
+            repo.ClearField('avatars')
+            for username, avatar in avatars.items():
+                repo.avatars[username] = avatar
 
-        self._save(repo)
-        print('i Updated repo %s:%s/%s' % (self.user, self.owner, self.repo))
+            repo.status = pb.Repo.SUCCESS
+            repo.ClearField('error_message')
+
+            self._save(repo)
+            print('i Updated repo %s' % self._repo_str())
+
+        except Exception as e:
+            repo.status = pb.Repo.ERROR
+            repo.error_message = str(e)
+            self._save(repo)
+            print('e Error updating repo %s: %s' % (self._repo_str(), str(e)))
+
+    def _repo_str(self):
+        return '%s:%s/%s' % (self.user, self.owner, self.repo)
 
     def _load_github_token(self, sourcerer_api_origin, sourcerer_api_secret):
         try:
@@ -277,7 +289,8 @@ class RepoTracker:
             request = Request(url, None, headers=headers)
             return urlopen(request)
         except HTTPError as e:
-            print('e %s. API limit?' % e.reason)
+            if e.code == 403:
+                print('e %s. GitHub API rate limit?' % e.reason)
             raise
 
     def _get_json(self, response):

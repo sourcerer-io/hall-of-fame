@@ -19,10 +19,36 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='repo.proto',
   package='',
   syntax='proto3',
-  serialized_pb=_b('\n\nrepo.proto\":\n\x06\x43ommit\x12\x0b\n\x03sha\x18\x01 \x01(\t\x12\x11\n\ttimestamp\x18\x02 \x01(\t\x12\x10\n\x08username\x18\x03 \x01(\t\"2\n\tCommitter\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x13\n\x0bnum_commits\x18\x02 \x01(\x05\"\xe7\x01\n\x04Repo\x12\r\n\x05owner\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0c\n\x04user\x18\x03 \x01(\t\x12$\n\x10top_contributors\x18\x04 \x03(\x0b\x32\n.Committer\x12\x1f\n\x0erecent_commits\x18\x05 \x03(\x0b\x32\x07.Commit\x12\x18\n\x10new_contributors\x18\x06 \x03(\t\x12#\n\x07\x61vatars\x18\x07 \x03(\x0b\x32\x12.Repo.AvatarsEntry\x1a.\n\x0c\x41vatarsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x62\x06proto3')
+  serialized_pb=_b('\n\nrepo.proto\":\n\x06\x43ommit\x12\x0b\n\x03sha\x18\x01 \x01(\t\x12\x11\n\ttimestamp\x18\x02 \x01(\t\x12\x10\n\x08username\x18\x03 \x01(\t\"2\n\tCommitter\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x13\n\x0bnum_commits\x18\x02 \x01(\x05\"\xcf\x02\n\x04Repo\x12\r\n\x05owner\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0c\n\x04user\x18\x03 \x01(\t\x12$\n\x10top_contributors\x18\x04 \x03(\x0b\x32\n.Committer\x12\x1f\n\x0erecent_commits\x18\x05 \x03(\x0b\x32\x07.Commit\x12\x18\n\x10new_contributors\x18\x06 \x03(\t\x12#\n\x07\x61vatars\x18\x07 \x03(\x0b\x32\x12.Repo.AvatarsEntry\x12\x1c\n\x06status\x18\x08 \x01(\x0e\x32\x0c.Repo.Status\x12\x15\n\rerror_message\x18\t \x01(\t\x1a.\n\x0c\x41vatarsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"1\n\x06Status\x12\x0f\n\x0bUNPROCESSED\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x62\x06proto3')
 )
 
 
+
+_REPO_STATUS = _descriptor.EnumDescriptor(
+  name='Status',
+  full_name='Repo.Status',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNPROCESSED', index=0, number=0,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='SUCCESS', index=1, number=1,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ERROR', index=2, number=2,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=413,
+  serialized_end=462,
+)
+_sym_db.RegisterEnumDescriptor(_REPO_STATUS)
 
 
 _COMMIT = _descriptor.Descriptor(
@@ -141,8 +167,8 @@ _REPO_AVATARSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=312,
-  serialized_end=358,
+  serialized_start=365,
+  serialized_end=411,
 )
 
 _REPO = _descriptor.Descriptor(
@@ -201,11 +227,26 @@ _REPO = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='status', full_name='Repo.status', index=7,
+      number=8, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error_message', full_name='Repo.error_message', index=8,
+      number=9, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_REPO_AVATARSENTRY, ],
   enum_types=[
+    _REPO_STATUS,
   ],
   options=None,
   is_extendable=False,
@@ -214,13 +255,15 @@ _REPO = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=127,
-  serialized_end=358,
+  serialized_end=462,
 )
 
 _REPO_AVATARSENTRY.containing_type = _REPO
 _REPO.fields_by_name['top_contributors'].message_type = _COMMITTER
 _REPO.fields_by_name['recent_commits'].message_type = _COMMIT
 _REPO.fields_by_name['avatars'].message_type = _REPO_AVATARSENTRY
+_REPO.fields_by_name['status'].enum_type = _REPO_STATUS
+_REPO_STATUS.containing_type = _REPO
 DESCRIPTOR.message_types_by_name['Commit'] = _COMMIT
 DESCRIPTOR.message_types_by_name['Committer'] = _COMMITTER
 DESCRIPTOR.message_types_by_name['Repo'] = _REPO

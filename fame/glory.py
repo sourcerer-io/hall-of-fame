@@ -138,7 +138,8 @@ class Glory:
     def _map_users_to_sourcerer(self, github_usernames):
         url = self._get_sourcerer_mapping_url(github_usernames)
         data = urlopen(url).read().decode()
-        self.user_mapping = json.loads(data)
+        parsed = json.loads(data)
+        self.user_mapping = {k: v for k,v in parsed.items() if v}
 
     def _map_to_sourcerer(self, github_username):
         if github_username not in self.user_mapping:
@@ -164,7 +165,10 @@ class Glory:
         storage.remove_subtree(temp_dir)
         storage.make_dirs(temp_dir)
 
-        image_dir = self._get_image_dir(temp=True)
+        temp_image_dir = self._get_image_dir(temp=True)
+        storage.make_dirs(temp_image_dir)
+
+        image_dir = self._get_image_dir(temp=False) 
         storage.make_dirs(image_dir)
 
     def _install(self):

@@ -77,6 +77,8 @@ def fame_manage(request):
         data = request.get_json()
         error_if_false(data, 'No payload')
 
+        print('i %s', % str(data))
+
         command = data.get('command', None)
         error_if_false(Manage.is_valid(command),
                        'Invalid command %s' % command)

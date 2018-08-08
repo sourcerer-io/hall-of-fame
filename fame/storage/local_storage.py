@@ -5,6 +5,7 @@ __copyright__ = '2018 Sourcerer, Inc'
 
 import os
 import shutil
+from datetime import datetime
 
 from .storage_base import StorageBase
 
@@ -57,6 +58,10 @@ class LocalStorage(StorageBase):
     def dir_exists(self, dir_path):
         full_path = os.path.join(self.work_dir, dir_path)
         return os.path.isdir(full_path)
+
+    def last_modified(self, path):
+        full_path = os.path.join(self.work_dir, path)
+        return datetime.utcfromtimestamp(os.path.getmtime(full_path))
 
     def save_file(self, path, data, content_type='text/plain'):
         full_path = os.path.join(self.work_dir, path)

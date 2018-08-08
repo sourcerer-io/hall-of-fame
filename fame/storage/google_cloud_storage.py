@@ -3,6 +3,9 @@
 __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
+from datetime import datetime
+
+import pytz
 from google.api_core.exceptions import NotFound
 from google.cloud import storage as gstorage
 
@@ -65,6 +68,10 @@ class GoogleCloudStorage(StorageBase):
         files = list(blob_iter)
         subdirs = list(blob_iter.prefixes)
         return bool(files) or bool(subdirs)
+
+    def last_modified(self, path):
+        blob = self.bucket.get_blob(path)
+        return blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
     def save_file(self, path, data, content_type='text/plain'):
         blob = self.bucket.blob(path)

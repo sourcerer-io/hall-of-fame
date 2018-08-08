@@ -65,6 +65,12 @@ def dir_exists(dir_path):
     return storage.dir_exists(dir_path)
 
 
+def last_modified(path):
+    if not storage:
+        error('Storage not initialized')
+    return storage.last_modified(path)
+
+
 def save_file(path, data, content_type='text/plain'):
     if not storage:
         error('Storage not initialized')

@@ -108,8 +108,15 @@ def fame_manage(request):
             tracker.remove()
         elif command == Manage.LIST:
             directory = []
-            for _, owner, repo in RepoTracker.list(user):
-                directory.append({'user': user, 'owner': owner, 'repo': repo})
+            for item in RepoTracker.list(user):
+                modified = item.last_modified.strftime('%Y-%m-%dT%H:%M:%SZ')
+                directory.append({
+                    'user': item.user,
+                    'owner': item.owner,
+                    'repo': item.repo,
+                    'status': item.status,
+                    'last_modified': modified,
+                    'message': item.error_message})
             result['data'] = directory
 
         return flask.jsonify(result)
@@ -139,7 +146,7 @@ def fame_refresh(data, context):
 
         if command == Refresh.REFRESH_ALL:  # Enqueue refresh for all repos.
             client = pubsub.PublisherClient()
-            for user, owner, repo in RepoTracker.list():
+            for user, owner, repo, _, _, _ in RepoTracker.list():
                 client.publish(topic, b'', command=Refresh.REFRESH,
                                user=user, owner=owner, repo=repo)
                 print('i Enqueued for refresh %s:%s/%s' % (user, owner, repo))

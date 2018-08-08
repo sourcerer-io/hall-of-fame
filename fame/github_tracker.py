@@ -6,6 +6,7 @@ __copyright__ = '2018 Sourcerer, Inc'
 import json
 import re
 
+from collections import namedtuple
 from datetime import datetime, timedelta
 from os import path
 from urllib.error import HTTPError
@@ -21,6 +22,11 @@ from . import repo_pb2 as pb
 class TrackerError(Exception):
     def __init__(self, message):
         super().__init__(message)
+
+
+ListRepoResult = namedtuple(
+    'RepoListResult',
+    ['user', 'owner', 'repo', 'status', 'last_modified', 'error_message'])
 
 
 class RepoTracker:
@@ -101,16 +107,20 @@ class RepoTracker:
         for user in users:
             for owner in storage.list_dir(user):
                 owner_dir = path.join(user, owner)
-                for repo in storage.list_dir(owner_dir):
-                    yield user, owner, repo
+                for repo_name in storage.list_dir(owner_dir):
+                    repo_path = path.join(owner_dir, repo_name, 'repo')
+                    repo = RepoTracker._load_repo(repo_path)
+                    if not repo:
+                        continue
+                    last_modified = storage.last_modified(repo_path)
+                    yield ListRepoResult(user, owner, repo_name,
+                                         repo.status, last_modified,
+                                         repo.error_message)
 
     def load(self):
-        repo_path = self._get_repo_path()
-        if not storage.file_exists(repo_path):
+        repo = RepoTracker._load_repo(self._get_repo_path())
+        if not repo:
             self.error('Repo not found')
-
-        repo = pb.Repo()
-        text_format.Merge(storage.load_file(repo_path), repo)
 
         return repo
 
@@ -137,6 +147,16 @@ class RepoTracker:
             repo.error_message = str(e)
             self._save(repo)
             print('e Error updating repo %s: %s' % (self._repo_str(), str(e)))
+
+    @staticmethod
+    def _load_repo(repo_path):
+        if not storage.file_exists(repo_path):
+            return None
+
+        repo = pb.Repo()
+        text_format.Merge(storage.load_file(repo_path), repo)
+
+        return repo
 
     def _repo_str(self):
         return '%s:%s/%s' % (self.user, self.owner, self.repo)

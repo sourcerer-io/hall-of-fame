@@ -15,6 +15,8 @@ __author__ = 'Sergey Surkov'
 import argparse
 import os.path
 
+from tabulate import tabulate
+
 import fame.storage
 import fame.ssl_hack
 from fame.github_tracker import RepoTracker
@@ -99,8 +101,14 @@ def main():
         elif args.command == 'update':
             tracker.update()
         elif args.command == 'list':
-            for user, owner, repo in RepoTracker.list(args.user):
-                print('%s:%s/%s' % (user, owner, repo))
+            table = []
+            for result in RepoTracker.list(args.user):
+                user, owner, repo, status, modified, error = result
+                modified = modified.strftime('%Y-%m-%d %H:%M:%S')
+                table.append([
+                    '%s:%s/%s' % (user, owner, repo),
+                    status, modified, error])
+            print(tabulate(table))
         elif args.command == 'print':
             repo = tracker.load()
             print(repo)

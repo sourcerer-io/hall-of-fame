@@ -5,8 +5,10 @@ __copyright__ = '2018 Sourcerer, Inc'
 
 import os
 import shutil
+from datetime import datetime
 
 from .storage_base import StorageBase
+
 
 class LocalStorage(StorageBase):
     def __init__(self, work_dir):
@@ -15,6 +17,14 @@ class LocalStorage(StorageBase):
     def make_dirs(self, path):
         full_path = os.path.join(self.work_dir, path)
         os.makedirs(full_path, exist_ok=True)
+
+    def move_file(self, from_path, to_path):
+        try:
+            os.rename(os.path.join(self.work_dir, from_path),
+                      os.path.join(self.work_dir, to_path))
+            return True
+        except OSError:
+            return False
 
     def remove_file(self, path):
         try:
@@ -41,11 +51,19 @@ class LocalStorage(StorageBase):
 
         return result
 
-    def path_exists(self, path):
-        full_path = os.path.join(self.work_dir, path)
-        return os.path.exists(full_path)
+    def file_exists(self, file_path):
+        full_path = os.path.join(self.work_dir, file_path)
+        return os.path.isfile(full_path)
 
-    def save_file(self, path, data):
+    def dir_exists(self, dir_path):
+        full_path = os.path.join(self.work_dir, dir_path)
+        return os.path.isdir(full_path)
+
+    def last_modified(self, path):
+        full_path = os.path.join(self.work_dir, path)
+        return datetime.utcfromtimestamp(os.path.getmtime(full_path))
+
+    def save_file(self, path, data, content_type='text/plain'):
         full_path = os.path.join(self.work_dir, path)
         with open(full_path, 'w') as f:
             f.write(data)

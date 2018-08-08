@@ -26,6 +26,13 @@ def make_dirs(path):
     return storage.make_dirs(path)
 
 
+def move_file(from_path, to_path):
+    """Moves a file."""
+    if not storage:
+        error('Storage not initialized')
+    return storage.move_file(from_path, to_path)
+
+
 def remove_file(path):
     """Removes a file."""
     if not storage:
@@ -46,16 +53,28 @@ def list_dir(dir_path, include_files=True, include_subdirs=True):
     return storage.list_dir(dir_path, include_files, include_subdirs)
 
 
-def path_exists(path):
+def file_exists(file_path):
     if not storage:
         error('Storage not initialized')
-    return storage.path_exists(path)
+    return storage.file_exists(file_path)
 
 
-def save_file(path, data):
+def dir_exists(dir_path):
     if not storage:
         error('Storage not initialized')
-    return storage.save_file(path, data)
+    return storage.dir_exists(dir_path)
+
+
+def last_modified(path):
+    if not storage:
+        error('Storage not initialized')
+    return storage.last_modified(path)
+
+
+def save_file(path, data, content_type='text/plain'):
+    if not storage:
+        error('Storage not initialized')
+    return storage.save_file(path, data, content_type)
 
 
 def load_file(path):

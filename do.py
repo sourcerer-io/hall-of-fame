@@ -15,8 +15,11 @@ __author__ = 'Sergey Surkov'
 import argparse
 import os.path
 
+from tabulate import tabulate
+
 import fame.storage
-from fame.github_tracker import RepoTracker, TrackerError
+import fame.ssl_hack
+from fame.github_tracker import RepoTracker
 from fame.glory import Glory
 
 
@@ -41,6 +44,16 @@ def parse_args():
     parser.add_argument('--gcloud_bucket', type=str,
                         help='Google cloud bucket to store data')
     parser.add_argument('--token', type=str, help='Github API token')
+    parser.add_argument('--sourcerer_origin', type=str,
+                        default='https://sourcerer.io',
+                        help='Sourcerer origin')
+    parser.add_argument('--sourcerer_api_origin', type=str,
+                        help='Sourcerer API origin')
+    parser.add_argument('--sourcerer_api_secret', type=str,
+                        help='Sourcerer API secret')
+    parser.add_argument('--no_ssl_host_check', action='store_true',
+                        default=False,
+                        help='Disable SSL host checks, useful for debugging')
     args = parser.parse_args()
 
     if is_repo_command(args.command):
@@ -50,6 +63,8 @@ def parse_args():
             parser.error('Must provide repo owner')
         if not args.repo:
             parser.error('Must provide repo name')
+        if not args.sourcerer_origin:
+            parser.error('Must provide Sourcerer origin')
 
     if args.work_dir and not os.path.isdir(args.work_dir):
         parser.error('--work_dir must be an existing directory')
@@ -63,16 +78,22 @@ def parse_args():
 def main():
     args = parse_args()
 
+    if args.no_ssl_host_check:
+        fame.ssl_hack.disable_ssl_host_check()
+
     if args.work_dir:
         fame.storage.configure_for_local(args.work_dir)
     elif args.gcloud_bucket:
         fame.storage.configure_for_google_cloud(args.gcloud_bucket)
 
-    tracker = RepoTracker()
-    if is_repo_command(args.command):
-        tracker.configure(args.user, args.owner, args.repo, args.token)
-
     try:
+        tracker = RepoTracker()
+        if is_repo_command(args.command):
+            tracker.configure(args.user, args.owner, args.repo,
+                              args.sourcerer_api_origin,
+                              args.sourcerer_api_secret,
+                              args.token)
+
         if args.command == 'add':
             tracker.add()
         elif args.command == 'remove':
@@ -80,16 +101,22 @@ def main():
         elif args.command == 'update':
             tracker.update()
         elif args.command == 'list':
-            for user, owner, repo in tracker.list():
-                print('%s:%s/%s' % (user, owner, repo))
+            table = []
+            for result in RepoTracker.list(args.user):
+                user, owner, repo, status, modified, error = result
+                modified = modified.strftime('%Y-%m-%d %H:%M:%S')
+                table.append([
+                    '%s:%s/%s' % (user, owner, repo),
+                    status, modified, error])
+            print(tabulate(table))
         elif args.command == 'print':
             repo = tracker.load()
             print(repo)
         elif args.command == 'glorify':
             repo = tracker.load()
-            glory = Glory()
+            glory = Glory(args.sourcerer_origin, args.sourcerer_api_origin)
             glory.make(repo)
-    except TrackerError as e:
+    except Exception as e:
         print('e %s' % str(e))
 
 

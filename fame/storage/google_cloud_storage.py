@@ -3,6 +3,9 @@
 __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
+from datetime import datetime
+
+import pytz
 from google.api_core.exceptions import NotFound
 from google.cloud import storage as gstorage
 
@@ -19,6 +22,13 @@ class GoogleCloudStorage(StorageBase):
             path += '/'
         self.bucket.blob(path)
 
+    def move_file(self, from_path, to_path):
+        blob = self.bucket.get_blob(from_path)
+        if not blob:
+            return False
+        self.bucket.rename_blob(blob, to_path)
+        return True
+
     def remove_file(self, path):
         try:
             self.bucket.delete_blob(path)
@@ -33,7 +43,7 @@ class GoogleCloudStorage(StorageBase):
         self.bucket.delete_blobs(blobs)
 
     def list_dir(self, dir_path, include_files=True, include_subdirs=True):
-        if not dir_path.endswith('/'):
+        if dir_path and not dir_path.endswith('/'):
             dir_path += '/'
         blob_iter = self.bucket.list_blobs(prefix=dir_path, delimiter='/')
         files = list(blob_iter)  # Must do for actual API calls.
@@ -48,13 +58,25 @@ class GoogleCloudStorage(StorageBase):
         discard = len(dir_path)
         return [e[discard:].strip('/') for e in result]
 
-    def path_exists(self, path):
-        return self.bucket.get_blob(path) is not None
+    def file_exists(self, file_path):
+        return self.bucket.get_blob(file_path) is not None
 
-    def save_file(self, path, data):
+    def dir_exists(self, dir_path):
+        if dir_path and not dir_path.endswith('/'):
+            dir_path += '/'
+        blob_iter = self.bucket.list_blobs(prefix=dir_path, delimiter='/')
+        files = list(blob_iter)
+        subdirs = list(blob_iter.prefixes)
+        return bool(files) or bool(subdirs)
+
+    def last_modified(self, path):
+        blob = self.bucket.get_blob(path)
+        return blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
+
+    def save_file(self, path, data, content_type='text/plain'):
         blob = self.bucket.blob(path)
-        blob.upload_from_string(data)
- 
+        blob.upload_from_string(data, content_type=content_type)
+
     def load_file(self, path):
         blob = self.bucket.blob(path)
         return blob.download_as_string().decode()

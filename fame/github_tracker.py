@@ -6,7 +6,8 @@ __copyright__ = '2018 Sourcerer, Inc'
 import json
 import re
 
-from datetime import datetime, timedelta, timezone
+from collections import namedtuple
+from datetime import datetime, timedelta
 from os import path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -23,23 +24,44 @@ class TrackerError(Exception):
         super().__init__(message)
 
 
+ListRepoResult = namedtuple(
+    'RepoListResult',
+    ['user', 'owner', 'repo', 'status', 'last_modified', 'error_message'])
+
+
 class RepoTracker:
-    def configure(self, user, owner, repo, github_token=None):
+    def configure(self, user, owner, repo,
+                  sourcerer_api_origin=None,
+                  sourcerer_api_secret=None,
+                  github_token=None):
         """Sets tracker to a repo.
+
+        If you supply API origin, you will also need API secret. API is used
+        if provided, and if github token was not directly supplied. In case,
+        there is neither API nor token supplied, anonymous access to GitHub
+        is used.
 
         Args:
           user: GitHub user who set up tracking for this repo.
           owner: GitHub repo owner.
           repo: GitHub repo, repo URL is github.com/:owner/:repo.
+          sourcerer_api_origin: API origin, used to fetch GitHub token.
+          sourcerer_api_secret: Secret for API authentication.
+          github_token: GitHub token supplied directly.
         """
         self.user = user
         self.owner = owner
         self.repo = repo
         self.github_token = github_token
+        if not github_token and sourcerer_api_origin:
+            if not sourcerer_api_secret:
+                raise TrackerError('Sourcerer API secret required')
+
+            self.github_token = self._load_github_token(
+                sourcerer_api_origin, sourcerer_api_secret)
 
     def error(self, message):
-        raise TrackerError(
-            '%s %s:%s/%s' % (message, self.user, self.owner, self.repo))
+        raise TrackerError('%s %s' % (message, self._repo_str()))
 
     def add(self):
         """Adds a repo to track.
@@ -50,14 +72,14 @@ class RepoTracker:
         repo = pb.Repo(owner=self.owner, name=self.repo, user=self.user)
 
         repo_path = self._get_repo_path()
-        if storage.path_exists(repo_path):
+        if storage.file_exists(repo_path):
             self.error('Repo exists')
         self._save(repo)
-        print('i Added repo %s:%s/%s' % (self.user, self.owner, self.repo))
+        print('i Added repo %s' % (self._repo_str()))
 
     def remove(self):
         """Removes GitHub repo from tracking."""
-        if not storage.path_exists(self._get_repo_path()):
+        if not storage.file_exists(self._get_repo_path()):
             self.error('Repo not found')
 
         repo_dir = self._get_repo_dir()
@@ -70,38 +92,88 @@ class RepoTracker:
         user_dir = self._get_user_dir()
         if not storage.list_dir(user_dir):
             storage.remove_subtree(user_dir)
-        print('i Removed repo %s:%s/%s' % (self.user, self.owner, self.repo))
+        print('i Removed repo %s' % (self._repo_str()))
 
-    def list(self):
+    @staticmethod
+    def list(user=None):
         """Returns all tracked GitHub repos."""
-        for user in storage.list_dir('', include_files=False):
+        if user:
+            if not storage.dir_exists(user):
+                return
+            users = [user]
+        else:
+            users = storage.list_dir('', include_files=False)
+
+        for user in users:
             for owner in storage.list_dir(user):
                 owner_dir = path.join(user, owner)
-                for repo in storage.list_dir(owner_dir):
-                    yield user, owner, repo
+                for repo_name in storage.list_dir(owner_dir):
+                    repo_path = path.join(owner_dir, repo_name, 'repo')
+                    repo = RepoTracker._load_repo(repo_path)
+                    if not repo:
+                        continue
+                    last_modified = storage.last_modified(repo_path)
+                    yield ListRepoResult(user, owner, repo_name,
+                                         repo.status, last_modified,
+                                         repo.error_message)
 
     def load(self):
-        repo_path = self._get_repo_path()
-        if not storage.path_exists(repo_path):
+        repo = RepoTracker._load_repo(self._get_repo_path())
+        if not repo:
             self.error('Repo not found')
+
+        return repo
+
+    def update(self):
+        repo = self.load()
+        try:
+            avatars = dict(repo.avatars)
+            self._update_latest_commits(repo, avatars)
+            self._update_top_contributors(repo, avatars)
+            self._update_new_contributors(repo)
+
+            repo.ClearField('avatars')
+            for username, avatar in avatars.items():
+                repo.avatars[username] = avatar
+
+            repo.status = pb.Repo.SUCCESS
+            repo.ClearField('error_message')
+
+            self._save(repo)
+            print('i Updated repo %s' % self._repo_str())
+
+        except Exception as e:
+            repo.status = pb.Repo.ERROR
+            repo.error_message = str(e)
+            self._save(repo)
+            print('e Error updating repo %s: %s' % (self._repo_str(), str(e)))
+
+    @staticmethod
+    def _load_repo(repo_path):
+        if not storage.file_exists(repo_path):
+            return None
 
         repo = pb.Repo()
         text_format.Merge(storage.load_file(repo_path), repo)
 
         return repo
 
-    def update(self):
-        repo = self.load()
-        avatars = dict(repo.avatars)
-        self._update_latest_commits(repo, avatars)
-        self._update_top_contributors(repo, avatars)
-        self._update_new_contributors(repo)
+    def _repo_str(self):
+        return '%s:%s/%s' % (self.user, self.owner, self.repo)
 
-        repo.ClearField('avatars')
-        for username, avatar in avatars.items():
-            repo.avatars[username] = avatar
-
-        self._save(repo)
+    def _load_github_token(self, sourcerer_api_origin, sourcerer_api_secret):
+        try:
+            PATH = 'api/face/hof/token'
+            args = 'username=%s&provider=github' % self.user
+            url = '%s/%s?%s' % (sourcerer_api_origin, PATH, args)
+            headers = {'Authorization': sourcerer_api_secret}
+            request = Request(url, None, headers=headers)
+            response = urlopen(request)
+            data = self._get_json(response)
+            return data['token']
+        except HTTPError as e:
+            print('e Failed to fetch GitHub API token: %s' % e.reason)
+            raise
 
     def _get_repo_path(self):
         return path.join(self._get_repo_dir(), 'repo')
@@ -121,7 +193,8 @@ class RepoTracker:
 
     def _update_latest_commits(self, repo, avatars):
         """Makes sure repo contains 7 days worth of most recent commits."""
-        last_known = repo.recent_commits[0].sha if repo.recent_commits else None
+        last_known = (repo.recent_commits[0].sha if repo.recent_commits
+                      else None)
         commits = []
         now = datetime.utcnow()
         since = now - timedelta(days=7)
@@ -160,14 +233,12 @@ class RepoTracker:
 
     def _update_top_contributors(self, repo, avatars):
         repo.ClearField('top_contributors')
-        if repo.recent_commits:
-            return
 
         url = self._make_github_url(repo.owner, repo.name, 'contributors')
         r = self._open_github_url(url)
         contributors = self._get_json(r)
 
-        for contrib in contributors[:5]:  # We just want top 5.
+        for contrib in contributors[:20]:
             committer = repo.top_contributors.add()
             committer.username = contrib['login']
             committer.num_commits = contrib['contributions']
@@ -238,9 +309,10 @@ class RepoTracker:
             request = Request(url, None, headers=headers)
             return urlopen(request)
         except HTTPError as e:
-            print('e %s. API limit?' % e.reason)
+            if e.code == 403:
+                print('e %s. GitHub API rate limit?' % e.reason)
             raise
 
-    def _get_json(self, request):
-        data = request.read().decode()
+    def _get_json(self, response):
+        data = response.read().decode()
         return json.loads(data)

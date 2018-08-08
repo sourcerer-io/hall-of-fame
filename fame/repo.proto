@@ -30,4 +30,14 @@ message Repo {
   repeated string new_contributors = 6;
 
   map<string, string> avatars = 7;
+
+  // Repo status.
+  enum Status {
+    UNPROCESSED = 0;
+    SUCCESS = 1;
+    ERROR = 2;
+  }
+
+  Status status = 8;
+  string error_message = 9;
 }

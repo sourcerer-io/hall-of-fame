@@ -8,6 +8,9 @@ class StorageBase:
     def make_dirs(self, path):
         pass
 
+    def move_file(self, from_path, to_path):
+        pass
+
     def remove_file(self, path):
         pass
 
@@ -17,10 +20,13 @@ class StorageBase:
     def list_dir(self, dir_path, include_files=True, include_subdirs=True):
         pass
 
-    def path_exists(self, path):
+    def file_exists(self, file_path):
         pass
 
-    def save_file(self, path, data):
+    def dir_exists(self, dir_path):
+        pass
+
+    def save_file(self, path, data, content_type='text/plain'):
         pass
 
     def load_file(self, path):

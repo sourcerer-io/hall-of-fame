@@ -4,8 +4,11 @@ __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
 import base64
+import re
 from urllib.request import urlopen
 from xml.etree import ElementTree
+
+from .svg_templates import SVG_GITHUB, SVG_BADGE, SVG_LEGEND, SVG_EMPTY
 
 
 class AvatarError(Exception):
@@ -13,43 +16,90 @@ class AvatarError(Exception):
         super().__init__(message)
 
 
+class Badger:
+    BADGE_H = 50
+    BADGE_OFF = 10
+
+    # Labels.
+    TRENDING = 'trending'
+    NEW = 'new'
+    TOP = 'top'
+
+    # Badge colors.
+    BADGE_COLORS = {NEW: '#4CB04F', TRENDING: '#2B95CF', TOP: '#F28F56'}
+
+    """Badger makes badges. In case you wonder."""
+    def __init__(self):
+        # A supercrude way to estimate symbol widths.
+        self.symbols = {s: 20 for s in ' 0123456789abcdefghijklmnopqrstuvwxyz'}
+        self.symbols.update({s: 9 for s in 'fjt'})
+        self.symbols.update({s: 5 for s in 'il'})
+        self.symbols.update({s: 30 for s in 'mw'})
+
+        self.svg = None
+        self.label = ''
+        self.value = ''
+        self.badge_w = self.badge_h = 0
+        self.label_w = self.value_w = 0
+        self.badge_off = Badger.BADGE_OFF
+
+    def make_badge(self, label, value):
+        if label not in [Badger.TRENDING, Badger.NEW, Badger.TOP]:
+            raise AvatarError('Invalid badge label: %s' % label)
+
+        self.label = label
+        self.value = str(value)
+        self.value_color = Badger.BADGE_COLORS[self.label]
+
+        self._estimate_badge_size()
+        self._make_badge()
+
+        # Since there can be multiple badges in the same SVG,
+        # let's make sure we have a reasonaly unique URL for clipPath.
+        ns = {'svg': 'http://www.w3.org/2000/svg'}
+        clip_path = self.svg.find('svg:defs/svg:clipPath', namespaces=ns)
+        clip_id = '%s-%s-%s' % (clip_path.get('id'), label, value)
+        clip_id = re.sub('[^a-z0-9]+', '-', clip_id)
+        clip_path.set('id', clip_id)
+
+        clipped_g = self.svg.find('svg:g[@clip-path]', namespaces=ns)
+        clipped_g.set('clip-path', 'url(#%s)' % clip_id)
+
+    def get_svg_string(self):
+        return ElementTree.tostring(self.svg, encoding='unicode')
+
+    def _estimate_badge_size(self):
+        # All sizes are relative units.
+        self.label_w = self._estimate_string_size(self.label)
+        self.value_w = self._estimate_string_size(self.value)
+        self.badge_w = self.label_w + self.value_w
+        self.badge_h = Badger.BADGE_H
+
+    def _estimate_string_size(self, s):
+        return sum([self.symbols[c] for c in s]) + 20
+
+    def _make_badge(self):
+        svg = SVG_BADGE.format(
+           badge_w=self.badge_w, badge_h=self.badge_h,
+           label_w=self.label_w,
+           label_x=self.label_w / 2, label_y=self.badge_h - 13,
+           label_text=self.label,
+           value_x=self.badge_w - self.value_w / 2,
+           value_y=self.badge_h - 13,
+           value_w=self.value_w,
+           value_text=self.value, value_color=self.value_color)
+        self.svg = ElementTree.fromstring(svg)
+
+        self.svg.set('width', '%.02f' % self.badge_w)
+        self.svg.set('height', '%.02f' % self.badge_h)
+        self.svg.set(
+            'viewBox', '0 0 %.02f %.02f' % (self.badge_w, self.badge_h))
+
+
 class AvatarAdorner:
-    SVG_GITHUB = """
-    <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        viewBox="0 0 200 200">
-      <defs>
-        <clipPath id="circle-clip">
-          <circle cx="100" cy="100" r="85"/>
-        </clipPath>
-      </defs>
-      <image clip-path="url(#circle-clip)"
-          width="200" height="200" xlink:href=""/>
-      <circle cx="100" cy="100" r="95"
-          stroke="#c1c5ca" stroke-width="1.5" fill="transparent" />
-    </svg>"""
-
-    SVG_BADGE = """
-    <svg>
-      <defs>
-        <clipPath id="badge-clip">
-          <rect width="{badge_w}" height="{badge_h}" rx="5" />
-        </clipPath>
-      </defs>
-      <g clip-path="url(#badge-clip)">
-        <rect width="{label_w}" height="100%" fill="#777777"/>
-        <rect x="{label_w}" width="{count_w}" height="100%"
-            fill="{count_color}"/> 
-      </g>
-      <g text-anchor="middle" font-size="34" fill="#ffffff"
-          font-family="Roboto,DejaVu Sans,Verdana,Geneva,sans-serif">
-        <text x="{label_x}" y="{label_y}">{label_text}</text>
-        <text x="{count_x}" y="{count_y}">{count_text}</text>
-      </g>
-    </svg>"""
-
+    """AvatarAdorner adorns avatars with badges."""
     def init_with_face(self, face_url):
-        self.svg = ElementTree.fromstring(AvatarAdorner.SVG_GITHUB)
+        self.svg = ElementTree.fromstring(SVG_GITHUB)
         self._init_face_image()
         self.face_image.set(
             '{http://www.w3.org/1999/xlink}href', face_url)
@@ -69,13 +119,12 @@ class AvatarAdorner:
         """
         self.badge = badge
         self.badge_count = count
+        self.badger = Badger()
 
         self._embed_face()
-        self._init_sizes_and_colors()
+        self._init_sizes()
         self._nest_svg()
-        self._estimate_badge_size()
-        self._make_space_for_badge()
-        self._attach_badge()
+        self._make_badge()
 
     def get_avatar_svg(self):
         return ElementTree.tostring(self.svg, encoding='unicode')
@@ -103,15 +152,11 @@ class AvatarAdorner:
         self.face_image.set('{http://www.w3.org/1999/xlink}href', data_url)
         print('i Embedded JPEG %s' % face_url)
 
-    def _init_sizes_and_colors(self):
+    def _init_sizes(self):
         view_box = self.svg.get('viewBox')
         if not view_box:
             raise AvatarError('No viewBox found')
         _, _, self.face_w, self.face_h = map(float, view_box.split(' '))
-
-        count_colors = {
-            'new': '#4CB04F', 'trending': '#2B95CF', 'top': '#F28F56' }
-        self.count_color = count_colors[self.badge]
 
     def _nest_svg(self):
         """Puts the input SVG under a nested SVG tag."""
@@ -124,48 +169,51 @@ class AvatarAdorner:
         face_svg.set('height', '%.02f' % self.face_h)
         self.face_svg = face_svg
 
-    def _estimate_badge_size(self):
-        # All sizes are relative units.
-        label_widths = { 'top': 90, 'new': 90, 'trending': 146 }
-        self.badge_count_w = len(str(self.badge_count)) * 20 + 20
-        self.badge_w = label_widths[self.badge] + self.badge_count_w
-        self.badge_h = 50
-        self.badge_off = 10
+    def _make_badge(self):
+        self.badger.make_badge(self.badge, self.badge_count)
+        badge_svg = self.badger.svg
+        self.svg.append(badge_svg)
 
-    def _make_space_for_badge(self):
-        """Makes space in the input SVG for the badge."""
-        w, h = self.face_w, self.face_h
-        h += self.badge_h + self.badge_off
+        # Make space for the badge and position the face and the badge.
+        face_w, face_h = self.face_w, self.face_h
+        badge_w, badge_h = self.badger.badge_w, self.badger.badge_h
 
-        if self.badge_w > w:
-            # Badge is wider than face, center face with respect to the badge.
-            self.face_svg.set('x', '%.02f' % ((self.badge_w - w) / 2))
-            w = self.badge_w
-    
+        w = face_w
+        h = face_h + badge_h + self.badger.badge_off
+
+        if badge_w > face_w:
+            # Badge is wider than face, center face with respect to badge.
+            self.face_svg.set('x', '%.02f' % ((badge_w - face_w) / 2))
+            w = badge_w
+        else:
+            # Face is wider than badge, center badge with respect to face.
+            badge_svg.set('x', '%.02f' % ((face_w - badge_w) / 2))
+
+        self.svg.set('viewBox', '0 0 %.02f %.02f' % (w, h))
+        badge_svg.set('y', '%.02f' % (face_h + self.badger.badge_off))
+
+
+class Spacer:
+    """Spacer makes static/predefined images."""
+    def make_legend(self):
+        svg = SVG_LEGEND.format(
+            new_color=Badger.BADGE_COLORS[Badger.NEW],
+            trending_color=Badger.BADGE_COLORS[Badger.TRENDING],
+            top_color=Badger.BADGE_COLORS[Badger.TOP])
+        self.svg = ElementTree.fromstring(svg)
+
+        # Adjust root SVG size.
+        view_box = self.svg.get('viewBox')
+        _, _, w, h = map(float, view_box.split(' '))
+        h += Badger.BADGE_H + Badger.BADGE_OFF  # For consitency with avatars.
         self.svg.set('viewBox', '0 0 %.02f %.02f' % (w, h))
 
-    def _attach_badge(self):
-        svg_badge = AvatarAdorner.SVG_BADGE.format(
-           badge_w=self.badge_w, badge_h=self.badge_h,
-           label_w=(self.badge_w - self.badge_count_w),
-           label_x=(self.badge_w - self.badge_count_w) / 2,
-           label_y=self.badge_h - 13,
-           label_text=self.badge,
-           count_x=self.badge_w - self.badge_count_w / 2,
-           count_y=self.badge_h - 13,
-           count_w=self.badge_count_w,
-           count_text=str(self.badge_count), count_color=self.count_color)
-        self.badge_svg = ElementTree.fromstring(svg_badge)
-        self.svg.append(self.badge_svg)
+    def make_empty(self):
+        self.svg = ElementTree.fromstring(SVG_EMPTY)
 
-        self.badge_svg.set('y', '%.02f' % (self.face_h + self.badge_off))
-        if self.badge_w < self.face_w:
-            x = (self.face_w - self.badge_w) / 2
-            self.badge_svg.set('x', '%.02f' % x)
-        self.badge_svg.set('width', '%.02f' % self.badge_w)
-        self.badge_svg.set('height', '%.02f' % self.badge_h)
-        self.badge_svg.set(
-            'viewBox', '0 0 %.02f %.02f' % (self.badge_w, self.badge_h))
+    def get_spacer_svg(self):
+        return ElementTree.tostring(self.svg, encoding='unicode')
+
 
 def register_svg_namespaces():
     """Some global initiaization."""

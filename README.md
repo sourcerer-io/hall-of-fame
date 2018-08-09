@@ -17,18 +17,18 @@ Hall-of-fame works with Sourcerer (https://sourcerer.io), but it's not required 
 Hall-of-fame code is entirely open source. You can run it in Google cloud yourself but we already do it for you. In order to add Hall-of-fame to your repository:
 
 1. Sign in to sourcerer.io with your GitHub: (https://sourcerer.io/start)
-2. Go to Settings/Hall-of-fame (https://sourcerer.io/settings#hall-of-fame)
+2. Go to Settings/Hall-of-fame (https://sourcerer.io/settings#hof)
 3. Add your repository there.
 4. You should see code to insert in your README.md. It will look something like this:
 
 ```
-<a href="https://fame.sourcerer.io/$USER/$OWNER/$REPO/links/0"
-  ><img src="https://fame.sourcerer.io/$USER/$OWNER/$REPO/images/0.svg"></a>
+<a href="https://sourcerer.io/fame/$USER/$OWNER/$REPO/links/0"
+  ><img src="https://sourcerer.io/fame/$USER/$OWNER/$REPO/images/0" height="90px" hspace="4"></a>
 
 ...
 
-<a href="https://fame.sourcerer.io/$USER/$OWNER/$REPO/links/7"
-  ><img src="https://fame.sourcerer.io/$USER/$OWNER/$REPO/images/7.svg"></a>
+<a href="https://sourcerer.io/fame/$USER/$OWNER/$REPO/links/7"
+  ><img src="https://sourcerer.io/fame/$USER/$OWNER/$REPO/images/7" height="90px" hspace="4"></a>
 ```
 Paste that code into your README.md, and you should be good to go. Hall-of-fame will take care of the rest.
 

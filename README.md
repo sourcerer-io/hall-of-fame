@@ -23,12 +23,12 @@ Hall-of-fame code is entirely open source. You can run it in Google cloud yourse
 
 ```
 <a href="https://sourcerer.io/fame/$USER/$OWNER/$REPO/links/0"
-  ><img src="https://sourcerer.io/fame/$USER/$OWNER/$REPO/images/0" height="90px" hspace="4"></a>
+  ><img src="https://sourcerer.io/fame/$USER/$OWNER/$REPO/images/0"></a>
 
 ...
 
 <a href="https://sourcerer.io/fame/$USER/$OWNER/$REPO/links/7"
-  ><img src="https://sourcerer.io/fame/$USER/$OWNER/$REPO/images/7" height="90px" hspace="4"></a>
+  ><img src="https://sourcerer.io/fame/$USER/$OWNER/$REPO/images/7"></a>
 ```
 Paste that code into your README.md, and you should be good to go. Hall-of-fame will take care of the rest.
 

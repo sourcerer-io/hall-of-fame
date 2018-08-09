@@ -22,13 +22,11 @@ Hall-of-fame code is entirely open source. You can run it in Google cloud yourse
 4. You should see code to insert in your README.md. It will look something like this:
 
 ```
-<a href="https://sourcerer.io/fame/$USER/$OWNER/$REPO/links/0"
-  ><img src="https://sourcerer.io/fame/$USER/$OWNER/$REPO/images/0"></a>
+[![](https://sourcerer.io/fame/$USER/$OWNER/$REPO/images/0)](https://sourcerer.io/fame/$USER/$OWNER/$REPO/links/0)
 
 ...
 
-<a href="https://sourcerer.io/fame/$USER/$OWNER/$REPO/links/7"
-  ><img src="https://sourcerer.io/fame/$USER/$OWNER/$REPO/images/7"></a>
+[![](https://sourcerer.io/fame/$USER/$OWNER/$REPO/images/7)](https://sourcerer.io/fame/$USER/$OWNER/$REPO/links/7)
 ```
 Paste that code into your README.md, and you should be good to go. Hall-of-fame will take care of the rest.
 
@@ -52,4 +50,11 @@ Note that Hall-of-fame will use your GitHub token for hourly updates via GitHub 
 
 Contribute to Hall-of-fame by all means. Here is the live Hall-of-fame for this repo:
 
-<a href="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/0"><img src="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/0" height="90px" hspace="4" /></a><a href="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/1"><img src="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/1" height="90px" hspace="4" /></a><a href="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/2"><img src="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/2" height="90px" hspace="4" /></a><a href="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/3"><img src="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/3" height="90px" hspace="4" /></a><a href="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/4"><img src="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/4" height="90px" hspace="4" /></a><a href="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/5"><img src="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/5" height="90px" hspace="4" /></a><a href="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/6"><img src="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/6" height="90px" hspace="4" /></a><a href="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/7"><img src="https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/7" height="90px" hspace="4" /></a>
+[![](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/0)](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/0)
+[![](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/1)](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/1)
+[![](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/2)](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/2)
+[![](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/3)](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/3)
+[![](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/4)](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/4)
+[![](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/5)](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/5)
+[![](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/6)](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/6)
+[![](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/images/7)](https://sourcerer.io/fame/sergey48k/sourcerer-io/hall-of-fame/links/7)

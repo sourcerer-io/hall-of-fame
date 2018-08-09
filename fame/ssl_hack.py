@@ -8,6 +8,7 @@ __copyright__ = '2018 Sourcerer'
 
 import ssl
 
+
 def disable_ssl_host_check():
     """Never use in production!"""
     try:

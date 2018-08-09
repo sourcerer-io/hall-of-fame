@@ -44,7 +44,7 @@ SVG_BADGE = """
 SVG_LEGEND = """
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
     xmlns:xlink="http://www.w3.org/1999/xlink"
-    viewBox="0 0 300 200">
+    viewBox="0 0 320 200">
   <circle cx="80" cy="75" r="22" fill="{new_color}"/>
   <circle cx="140" cy="75" r="22" fill="{trending_color}"/>
   <circle cx="140" cy="135" r="22" fill="{top_color}"/>

@@ -3,8 +3,6 @@
 __author__ = 'Sergey Surkov'
 __copyright__ = '2018 Sourcerer, Inc'
 
-from datetime import datetime
-
 import pytz
 from google.api_core.exceptions import NotFound
 from google.cloud import storage as gstorage

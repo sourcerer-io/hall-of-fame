@@ -120,7 +120,7 @@ class Glory:
         # Generate a test HTML.
         f = io.StringIO()
         for i in range(len(profile_urls)):
-            h = '<a href="%s"><img src="images/%d.svg"></a>\n'
+            h = '<a href="%s"><img src="images/%d.svg"></a>'
             f.write(h % (profile_urls[i], i))
         test_html_path = self._get_test_html_path(temp=True)
         storage.save_file(test_html_path, f.getvalue(), 'text/html')
@@ -139,7 +139,7 @@ class Glory:
         url = self._get_sourcerer_mapping_url(github_usernames)
         data = urlopen(url).read().decode()
         parsed = json.loads(data)
-        self.user_mapping = {k: v for k,v in parsed.items() if v}
+        self.user_mapping = {k: v for k, v in parsed.items() if v}
 
     def _map_to_sourcerer(self, github_username):
         if github_username not in self.user_mapping:
@@ -168,7 +168,7 @@ class Glory:
         temp_image_dir = self._get_image_dir(temp=True)
         storage.make_dirs(temp_image_dir)
 
-        image_dir = self._get_image_dir(temp=False) 
+        image_dir = self._get_image_dir(temp=False)
         storage.make_dirs(image_dir)
 
     def _install(self):

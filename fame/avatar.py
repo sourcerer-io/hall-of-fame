@@ -101,6 +101,7 @@ class Badger:
 
 
 class AvatarAdorner:
+
     """AvatarAdorner adorns avatars with badges."""
 
     PADDING = 10  # Padding on each side of an adorned avatar.

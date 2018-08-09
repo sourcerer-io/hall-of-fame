@@ -11,6 +11,10 @@ from xml.etree import ElementTree
 from .svg_templates import SVG_GITHUB, SVG_BADGE, SVG_LEGEND, SVG_EMPTY
 
 
+# Height of a finished Hall-of-fame image.
+FINAL_HEIGHT = "90px"
+
+
 class AvatarError(Exception):
     def __init__(self, message):
         super().__init__(message)
@@ -97,6 +101,7 @@ class Badger:
 
 
 class AvatarAdorner:
+
     """AvatarAdorner adorns avatars with badges."""
     def init_with_face(self, face_url):
         self.svg = ElementTree.fromstring(SVG_GITHUB)
@@ -169,6 +174,8 @@ class AvatarAdorner:
         face_svg.set('height', '%.02f' % self.face_h)
         self.face_svg = face_svg
 
+        self.svg.set('height', FINAL_HEIGHT)
+
     def _make_badge(self):
         self.badger.make_badge(self.badge, self.badge_count)
         badge_svg = self.badger.svg
@@ -207,9 +214,11 @@ class Spacer:
         _, _, w, h = map(float, view_box.split(' '))
         h += Badger.BADGE_H + Badger.BADGE_OFF  # For consitency with avatars.
         self.svg.set('viewBox', '0 0 %.02f %.02f' % (w, h))
+        self.svg.set('height', FINAL_HEIGHT)
 
     def make_empty(self):
         self.svg = ElementTree.fromstring(SVG_EMPTY)
+        self.svg.set('height', FINAL_HEIGHT)
 
     def get_spacer_svg(self):
         return ElementTree.tostring(self.svg, encoding='unicode')

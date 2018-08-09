@@ -120,7 +120,7 @@ class Glory:
         # Generate a test HTML.
         f = io.StringIO()
         for i in range(len(profile_urls)):
-            h = '<a href="%s"><img src="images/%d.svg"></a>\n'
+            h = '<a href="%s"><img src="images/%d.svg"></a>'
             f.write(h % (profile_urls[i], i))
         test_html_path = self._get_test_html_path(temp=True)
         storage.save_file(test_html_path, f.getvalue(), 'text/html')

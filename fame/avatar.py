@@ -101,8 +101,10 @@ class Badger:
 
 
 class AvatarAdorner:
-
     """AvatarAdorner adorns avatars with badges."""
+
+    PADDING = 10  # Padding on each side of an adorned avatar.
+
     def init_with_face(self, face_url):
         self.svg = ElementTree.fromstring(SVG_GITHUB)
         self._init_face_image()
@@ -185,16 +187,11 @@ class AvatarAdorner:
         face_w, face_h = self.face_w, self.face_h
         badge_w, badge_h = self.badger.badge_w, self.badger.badge_h
 
-        w = face_w
         h = face_h + badge_h + self.badger.badge_off
+        w = max(face_w, badge_w) + AvatarAdorner.PADDING * 2
 
-        if badge_w > face_w:
-            # Badge is wider than face, center face with respect to badge.
-            self.face_svg.set('x', '%.02f' % ((badge_w - face_w) / 2))
-            w = badge_w
-        else:
-            # Face is wider than badge, center badge with respect to face.
-            badge_svg.set('x', '%.02f' % ((face_w - badge_w) / 2))
+        self.face_svg.set('x', '%.02f' % ((w - face_w) / 2))  # Center face.
+        badge_svg.set('x', '%.02f' % ((w - badge_w) / 2))  # Center badge.
 
         self.svg.set('viewBox', '0 0 %.02f %.02f' % (w, h))
         badge_svg.set('y', '%.02f' % (face_h + self.badger.badge_off))

@@ -1,6 +1,6 @@
 # Hall-Of-Fame
 
-<img src="https://user-images.githubusercontent.com/20287615/43668986-d98186cc-9734-11e8-9c3e-3956a512be04.png" height="96px">
+<img src="https://user-images.githubusercontent.com/20287615/43668986-d98186cc-9734-11e8-9c3e-3956a512be04.png" width="680px">
 
 Hall-of-fame helps you show some love to your contributors. It automatically highlights your new, trending, and top contributors, and updates every hour. You can put this widget anywhere inside your README, e.g. to "Contributing" section. No maintenance is required.
 

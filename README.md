@@ -4,6 +4,8 @@
 
 Hall-of-fame helps you show some love to your contributors. It automatically highlights your new, trending, and top contributors, and updates every hour. You can put this widget anywhere inside your README, e.g. to "Contributing" section. No maintenance is required.
 
+**Until Aug 24th only:** We'll be happy to make a pull request with hall-of-fame for your repo. Instructions: sign in to (https://sourcerer.io) with your GitHub (so that hall-of-fame could use your GitHub token to update), and send us an email to hello@sourcerer.io with the repo name. We'll take care of the rest.
+
 ## How it works
 
 Every hour, Hall-of-fame looks into recent commits of your repo using GitHub API. It then selects three categories of contributors: new (those who made their first commit to your repo in the last 7 days), trending (those with most commits in the last 7 days), and top (those with most commits of all time). It then selects up to three new contributors, up to 4 trending contributors, and if total is less than 7, it fill up the remaining spots with top contributors.

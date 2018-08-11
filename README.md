@@ -10,7 +10,7 @@ Hall-of-fame helps you show some love to your contributors. It automatically hig
 
 Every hour, Hall-of-fame looks into recent commits of your repo using GitHub API. It then selects three categories of contributors: new (those who made their first commit to your repo in the last 7 days), trending (those with most commits in the last 7 days), and top (those with most commits of all time). It then selects up to three new contributors, up to 4 trending contributors, and if total is less than 7, it fill up the remaining spots with top contributors.
 
-Each contributor in the Hall-of-fame is represented with their avatar, and a badge new/trending/top with the corresponding number of commits. Each avatar links to a contributor's profile. Which means that anyone has a chance to be prominently features on your README for some time!
+Each contributor in the Hall-of-fame is represented with their avatar, and a badge new/trending/top with the corresponding number of commits. Each avatar links to a contributor's profile. Which means that anyone has a chance to be prominently featured on your README for some time!
 
 Hall-of-fame works with Sourcerer (https://sourcerer.io), but it's not required for your contributors. If a contributor has a Sourcerer profile, their Sourcerer avatar with a halo is used, and the avatar links to their Sourcerer profile. If they don't, an avatar based on their GitHub is used, and it is linked to their GitHub profile.
 

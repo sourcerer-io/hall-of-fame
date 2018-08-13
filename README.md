@@ -38,7 +38,7 @@ Note that Hall-of-fame will use your GitHub token for hourly updates via GitHub 
 
 **Q:** Why do you only show 7 entries?
 
-**A:** 7 is a lucky number. But seriously, recognition means that you stand out. It's hard to stand out in a crowd, so we limit to 7. If you stronly feel a different number is better, file an issue. We'll consider.
+**A:** 7 is a lucky number. But seriously, recognition means that you stand out. It's hard to stand out in a crowd, so we limit to 7. If you strongly feel a different number is better, file an issue. We'll consider.
 
 **Q:** What is the reason to show new, trending, top, in this order?
 

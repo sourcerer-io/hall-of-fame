@@ -30,6 +30,8 @@ ListRepoResult = namedtuple(
 
 
 class RepoTracker:
+    KNOWN_BOTS = ['pyup-bot']
+
     def configure(self, user, owner, repo,
                   sourcerer_api_origin=None,
                   sourcerer_api_secret=None,
@@ -214,6 +216,10 @@ class RepoTracker:
             except:
                 print('w Author, date, or avatar missing. Skipping %s' % sha)
 
+            if author in RepoTracker.KNOWN_BOTS:
+                print('i Skipping bot commit %s by %s' % (sha, author))
+                continue
+
             commit = pb.Commit(sha=sha, timestamp=commit_date, username=author)
             commits.append(commit)
 
@@ -239,10 +245,15 @@ class RepoTracker:
         contributors = self._get_json(r)
 
         for contrib in contributors[:20]:
+            username = contrib['login']
+            if username in RepoTracker.KNOWN_BOTS:
+                print('i Skipping bot in top contributors: %s' % username)
+                continue
+
             committer = repo.top_contributors.add()
-            committer.username = contrib['login']
+            committer.username = username
             committer.num_commits = contrib['contributions']
-            avatars[committer.username] = contrib['avatar_url']
+            avatars[username] = contrib['avatar_url']
 
     def _update_new_contributors(self, repo):
         repo.ClearField('new_contributors')

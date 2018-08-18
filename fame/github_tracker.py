@@ -30,7 +30,7 @@ ListRepoResult = namedtuple(
 
 
 class RepoTracker:
-    KNOWN_BOTS = ['pyup-bot']
+    KNOWN_BOTS = ['pyup-bot', 'dependabot-bot', 'renovate-bot']
 
     def configure(self, user, owner, repo,
                   sourcerer_api_origin=None,

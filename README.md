@@ -1,4 +1,4 @@
-# Hall-Of-Fame
+# Hall-Of-Fame [![](https://img.shields.io/github/release/sourcerer-io/hall-of-fame.svg?colorB=58839b)](https://github.com/sourcerer-io/hall-of-fame/releases) [![](https://img.shields.io/github/license/sourcerer-io/hall-of-fame.svg?colorB=ff0000)](https://github.com/sourcerer-io/hall-of-fame/blob/master/LICENSE.md)
 
 <img src="https://user-images.githubusercontent.com/20287615/43668986-d98186cc-9734-11e8-9c3e-3956a512be04.png" width="680px">
 

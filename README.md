@@ -14,7 +14,7 @@ Hall-of-fame works with Sourcerer (https://sourcerer.io), but it's not required 
 
 ## Live examples
 
-### [iterative/dvc](https://github.com/iterative/dvc)
+1. **[iterative/dvc](https://github.com/iterative/dvc)**
 
 [![](https://sourcerer.io/fame/efiop/iterative/dvc/images/0)](https://sourcerer.io/fame/efiop/iterative/dvc/links/0)
 [![](https://sourcerer.io/fame/efiop/iterative/dvc/images/1)](https://sourcerer.io/fame/efiop/iterative/dvc/links/1)
@@ -25,7 +25,7 @@ Hall-of-fame works with Sourcerer (https://sourcerer.io), but it's not required 
 [![](https://sourcerer.io/fame/efiop/iterative/dvc/images/6)](https://sourcerer.io/fame/efiop/iterative/dvc/links/6)
 [![](https://sourcerer.io/fame/efiop/iterative/dvc/images/7)](https://sourcerer.io/fame/efiop/iterative/dvc/links/7)
 
-### [ironmussa/Optimus](https://github.com/ironmussa/Optimus)
+2. **[ironmussa/Optimus](https://github.com/ironmussa/Optimus)**
 
 [![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/0)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/0)
 [![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/1)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/1)
@@ -37,7 +37,8 @@ Hall-of-fame works with Sourcerer (https://sourcerer.io), but it's not required 
 [![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/7)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/7)
 
 
-### [epicmaxco/vuestic-admin](https://github.com/epicmaxco/vuestic-admin)
+3. **[epicmaxco/vuestic-admin](https://github.com/epicmaxco/vuestic-admin)**
+
 [![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/0)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/0)
 [![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/1)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/1)
 [![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/2)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/2)

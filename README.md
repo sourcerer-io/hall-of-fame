@@ -14,11 +14,38 @@ Hall-of-fame works with Sourcerer (https://sourcerer.io), but it's not required 
 
 ## Live examples
 
-| Repo | Live Hall-of-fame |
-|---|---|
-| [iterative/dvc](https://github.com/iterative/dvc) | [![](https://sourcerer.io/fame/efiop/iterative/dvc/images/0)](https://sourcerer.io/fame/efiop/iterative/dvc/links/0) [![](https://sourcerer.io/fame/efiop/iterative/dvc/images/1)](https://sourcerer.io/fame/efiop/iterative/dvc/links/1) [![](https://sourcerer.io/fame/efiop/iterative/dvc/images/2)](https://sourcerer.io/fame/efiop/iterative/dvc/links/2) [![](https://sourcerer.io/fame/efiop/iterative/dvc/images/3)](https://sourcerer.io/fame/efiop/iterative/dvc/links/3) [![](https://sourcerer.io/fame/efiop/iterative/dvc/images/4)](https://sourcerer.io/fame/efiop/iterative/dvc/links/4) [![](https://sourcerer.io/fame/efiop/iterative/dvc/images/5)](https://sourcerer.io/fame/efiop/iterative/dvc/links/5) [![](https://sourcerer.io/fame/efiop/iterative/dvc/images/6)](https://sourcerer.io/fame/efiop/iterative/dvc/links/6) [![](https://sourcerer.io/fame/efiop/iterative/dvc/images/7)](https://sourcerer.io/fame/efiop/iterative/dvc/links/7) |
-| [ironmussa/Optimus](https://github.com/ironmussa/Optimus) | [![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/0)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/0) [![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/1)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/1) [![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/2)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/2) [![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/3)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/3) [![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/4)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/4) [![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/5)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/5) [![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/6)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/6) [![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/7)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/7) |
-| [epicmaxco/vuestic-admin](https://github.com/epicmaxco/vuestic-admin) | [![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/0)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/0)[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/1)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/1)[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/2)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/2)[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/3)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/3)[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/4)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/4)[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/5)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/5)[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/6)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/6)[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/7)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/7) |
+### [iterative/dvc](https://github.com/iterative/dvc)
+
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/0)](https://sourcerer.io/fame/efiop/iterative/dvc/links/0)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/1)](https://sourcerer.io/fame/efiop/iterative/dvc/links/1)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/2)](https://sourcerer.io/fame/efiop/iterative/dvc/links/2)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/3)](https://sourcerer.io/fame/efiop/iterative/dvc/links/3)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/4)](https://sourcerer.io/fame/efiop/iterative/dvc/links/4)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/5)](https://sourcerer.io/fame/efiop/iterative/dvc/links/5)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/6)](https://sourcerer.io/fame/efiop/iterative/dvc/links/6)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/7)](https://sourcerer.io/fame/efiop/iterative/dvc/links/7)
+
+### [ironmussa/Optimus](https://github.com/ironmussa/Optimus)
+
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/0)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/0)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/1)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/1)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/2)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/2)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/3)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/3)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/4)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/4)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/5)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/5)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/6)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/6)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/7)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/7)
+
+
+### [epicmaxco/vuestic-admin](https://github.com/epicmaxco/vuestic-admin)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/0)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/0)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/1)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/1)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/2)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/2)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/3)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/3)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/4)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/4)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/5)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/5)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/6)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/6)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/7)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/7) |
 
 ## Getting started
 

@@ -212,16 +212,18 @@ class RepoTracker:
                 # Chop 'Z' out of the timestamp.
                 commit_date = c['commit']['author']['date'][:-1]
                 author = c['author']['login']
+
+                if author in RepoTracker.KNOWN_BOTS:
+                    print('i Skipping bot commit %s by %s' % (sha, author))
+                    continue
+
                 avatars[author] = c['author']['avatar_url']
+
+                commit = pb.Commit(
+                    sha=sha, timestamp=commit_date, username=author)
+                commits.append(commit)
             except:
                 print('w Author, date, or avatar missing. Skipping %s' % sha)
-
-            if author in RepoTracker.KNOWN_BOTS:
-                print('i Skipping bot commit %s by %s' % (sha, author))
-                continue
-
-            commit = pb.Commit(sha=sha, timestamp=commit_date, username=author)
-            commits.append(commit)
 
         # We need to keep just last week's worth of commits.
         commits.extend(repo.recent_commits)

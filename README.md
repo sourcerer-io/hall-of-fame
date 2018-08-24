@@ -1,10 +1,8 @@
-# Hall-Of-Fame
+# Hall-Of-Fame [![](https://img.shields.io/github/release/sourcerer-io/hall-of-fame.svg?colorB=58839b)](https://github.com/sourcerer-io/hall-of-fame/releases) [![](https://img.shields.io/github/license/sourcerer-io/hall-of-fame.svg?colorB=ff0000)](https://github.com/sourcerer-io/hall-of-fame/blob/master/LICENSE.md)
 
 <img src="https://user-images.githubusercontent.com/20287615/43668986-d98186cc-9734-11e8-9c3e-3956a512be04.png" width="680px">
 
 Hall-of-fame helps you show some love to your contributors. It automatically highlights your new, trending, and top contributors, and updates every hour. You can put this widget anywhere inside your README, e.g. to "Contributing" section. No maintenance is required.
-
-**Until Aug 24th only:** We'll be happy to make a pull request with hall-of-fame for your repo. Instructions: sign in to (https://sourcerer.io) with your GitHub (so that hall-of-fame could use your GitHub token to update), and send us an email to hello@sourcerer.io with the repo name. We'll take care of the rest.
 
 ## How it works
 
@@ -13,6 +11,41 @@ Every hour, Hall-of-fame looks into recent commits of your repo using GitHub API
 Each contributor in the Hall-of-fame is represented with their avatar, and a badge new/trending/top with the corresponding number of commits. Each avatar links to a contributor's profile. Which means that anyone has a chance to be prominently featured on your README for some time!
 
 Hall-of-fame works with Sourcerer (https://sourcerer.io), but it's not required for your contributors. If a contributor has a Sourcerer profile, their Sourcerer avatar with a halo is used, and the avatar links to their Sourcerer profile. If they don't, an avatar based on their GitHub is used, and it is linked to their GitHub profile.
+
+## Live examples
+
+### [iterative/dvc](https://github.com/iterative/dvc)
+
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/0)](https://sourcerer.io/fame/efiop/iterative/dvc/links/0)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/1)](https://sourcerer.io/fame/efiop/iterative/dvc/links/1)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/2)](https://sourcerer.io/fame/efiop/iterative/dvc/links/2)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/3)](https://sourcerer.io/fame/efiop/iterative/dvc/links/3)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/4)](https://sourcerer.io/fame/efiop/iterative/dvc/links/4)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/5)](https://sourcerer.io/fame/efiop/iterative/dvc/links/5)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/6)](https://sourcerer.io/fame/efiop/iterative/dvc/links/6)
+[![](https://sourcerer.io/fame/efiop/iterative/dvc/images/7)](https://sourcerer.io/fame/efiop/iterative/dvc/links/7)
+
+### [ironmussa/Optimus](https://github.com/ironmussa/Optimus)
+
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/0)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/0)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/1)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/1)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/2)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/2)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/3)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/3)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/4)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/4)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/5)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/5)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/6)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/6)
+[![](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/images/7)](https://sourcerer.io/fame/FavioVazquez/ironmussa/Optimus/links/7)
+
+
+### [epicmaxco/vuestic-admin](https://github.com/epicmaxco/vuestic-admin)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/0)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/0)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/1)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/1)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/2)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/2)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/3)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/3)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/4)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/4)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/5)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/5)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/6)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/6)
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/7)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/7) |
 
 ## Getting started
 

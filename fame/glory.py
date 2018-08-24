@@ -58,10 +58,20 @@ class Glory:
         for username, num_commits in contribs:
             if username in new_contribs and len(new_faces) < Glory.MAX_NEW:
                 new_faces.append((username, num_commits))
-            elif len(trending) < Glory.MAX_TRENDING:
-                trending.append((username, num_commits))
             else:
-                break
+                trending.append((username, num_commits))
+
+        # If we have more trending that we have spots for, let's see if we can
+        # drop top contributors from the trending list. The motivation here is
+        # top contributors always contribute, so they probably don't require
+        # much motivation :)
+        if len(trending) > Glory.MAX_TRENDING:
+            top3 = [c.username for c in self.repo.top_contributors][:3]
+            top_trending = [u for u, _ in trending if u in top3]
+            to_drop = top_trending[:Glory.MAX_TRENDING - len(trending)]
+            trending = [(u, c) for u, c in trending if u not in to_drop]
+
+        trending = trending[:Glory.MAX_TRENDING]
 
         return trending, new_faces
 

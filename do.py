@@ -23,15 +23,31 @@ from fame.github_tracker import RepoTracker
 from fame.glory import Glory
 
 
-def is_repo_command(command):
-    return command in ['add', 'remove', 'update', 'print', 'glorify']
+class Command:
+    ADD = 'add'
+    REMOVE = 'remove'
+    UPDATE = 'update'
+    LIST = 'list'
+    PRINT = 'print'
+    GLORIFY = 'glorify'
+
+    @staticmethod
+    def is_repo_command(command):
+        return command in [
+            Command.ADD, Command.REMOVE, Command.UPDATE,
+            Command.PRINT, Command.GLORIFY]
+
+    @staticmethod
+    def get_all():
+        return [
+            Command.ADD, Command.REMOVE, Command.UPDATE,
+            Command.LIST, Command.PRINT, Command.GLORIFY]
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('command', type=str,
-                        choices=['add', 'remove', 'list',
-                                 'update', 'print', 'glorify'],
+                        choices=Command.get_all(),
                         help='Command to execute')
     parser.add_argument('--user', type=str,
                         help='Github user that tracks a repo')
@@ -56,7 +72,7 @@ def parse_args():
                         help='Disable SSL host checks, useful for debugging')
     args = parser.parse_args()
 
-    if is_repo_command(args.command):
+    if Command.is_repo_command(args.command):
         if not args.user:
             parser.error('Must provide repo user')
         if not args.owner:
@@ -88,19 +104,19 @@ def main():
 
     try:
         tracker = RepoTracker()
-        if is_repo_command(args.command):
+        if Command.is_repo_command(args.command):
             tracker.configure(args.user, args.owner, args.repo,
                               args.sourcerer_api_origin,
                               args.sourcerer_api_secret,
                               args.token)
 
-        if args.command == 'add':
+        if args.command == Command.ADD:
             tracker.add()
-        elif args.command == 'remove':
+        elif args.command == Command.REMOVE:
             tracker.remove()
-        elif args.command == 'update':
+        elif args.command == Command.UPDATE:
             tracker.update()
-        elif args.command == 'list':
+        elif args.command == Command.LIST:
             table = []
             for result in RepoTracker.list(args.user):
                 user, owner, repo, status, modified, error = result
@@ -109,10 +125,10 @@ def main():
                     '%s:%s/%s' % (user, owner, repo),
                     status, modified, error])
             print(tabulate(table))
-        elif args.command == 'print':
+        elif args.command == Command.PRINT:
             repo = tracker.load()
             print(repo)
-        elif args.command == 'glorify':
+        elif args.command == Command.GLORIFY:
             repo = tracker.load()
             glory = Glory(args.sourcerer_origin, args.sourcerer_api_origin)
             glory.make(repo)

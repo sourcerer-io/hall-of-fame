@@ -7,6 +7,7 @@ Commands
     update: Updates a repo.
     print: Prints a tracked repo.
     glorify: Generate the hall of fame.
+    code: Generate MD or RST integration code.
 """
 
 __copyright__ = '2018 Sourcerer, Inc.'
@@ -19,19 +20,37 @@ from tabulate import tabulate
 
 import fame.storage
 import fame.ssl_hack
+from fame.code_gen import make_md_code, make_rst_code
 from fame.github_tracker import RepoTracker
 from fame.glory import Glory
 
 
-def is_repo_command(command):
-    return command in ['add', 'remove', 'update', 'print', 'glorify']
+class Command:
+    ADD = 'add'
+    REMOVE = 'remove'
+    UPDATE = 'update'
+    LIST = 'list'
+    PRINT = 'print'
+    GLORIFY = 'glorify'
+    CODE = 'code'
+
+    @staticmethod
+    def is_repo_command(command):
+        return command in [
+            Command.ADD, Command.REMOVE, Command.UPDATE,
+            Command.PRINT, Command.GLORIFY]
+
+    @staticmethod
+    def get_all():
+        return [
+            Command.ADD, Command.REMOVE, Command.UPDATE,
+            Command.LIST, Command.PRINT, Command.GLORIFY, Command.CODE]
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('command', type=str,
-                        choices=['add', 'remove', 'list',
-                                 'update', 'print', 'glorify'],
+                        choices=Command.get_all(),
                         help='Command to execute')
     parser.add_argument('--user', type=str,
                         help='Github user that tracks a repo')
@@ -43,6 +62,8 @@ def parse_args():
                         help='Working directory to store data')
     parser.add_argument('--gcloud_bucket', type=str,
                         help='Google cloud bucket to store data')
+    parser.add_argument('--format', type=str, choices=['md', 'rst'],
+                        default='md', help='Code format to generate')
     parser.add_argument('--token', type=str, help='Github API token')
     parser.add_argument('--sourcerer_origin', type=str,
                         default='https://sourcerer.io',
@@ -56,15 +77,16 @@ def parse_args():
                         help='Disable SSL host checks, useful for debugging')
     args = parser.parse_args()
 
-    if is_repo_command(args.command):
+    if Command.is_repo_command(args.command) or args.command == Command.CODE:
         if not args.user:
             parser.error('Must provide repo user')
         if not args.owner:
             parser.error('Must provide repo owner')
         if not args.repo:
             parser.error('Must provide repo name')
-        if not args.sourcerer_origin:
-            parser.error('Must provide Sourcerer origin')
+
+    if Command.is_repo_command(args.command) and not args.sourcerer_origin:
+        parser.error('Must provide Sourcerer origin')
 
     if args.work_dir and not os.path.isdir(args.work_dir):
         parser.error('--work_dir must be an existing directory')
@@ -88,19 +110,19 @@ def main():
 
     try:
         tracker = RepoTracker()
-        if is_repo_command(args.command):
+        if Command.is_repo_command(args.command):
             tracker.configure(args.user, args.owner, args.repo,
                               args.sourcerer_api_origin,
                               args.sourcerer_api_secret,
                               args.token)
 
-        if args.command == 'add':
+        if args.command == Command.ADD:
             tracker.add()
-        elif args.command == 'remove':
+        elif args.command == Command.REMOVE:
             tracker.remove()
-        elif args.command == 'update':
+        elif args.command == Command.UPDATE:
             tracker.update()
-        elif args.command == 'list':
+        elif args.command == Command.LIST:
             table = []
             for result in RepoTracker.list(args.user):
                 user, owner, repo, status, modified, error = result
@@ -109,13 +131,19 @@ def main():
                     '%s:%s/%s' % (user, owner, repo),
                     status, modified, error])
             print(tabulate(table))
-        elif args.command == 'print':
+        elif args.command == Command.PRINT:
             repo = tracker.load()
             print(repo)
-        elif args.command == 'glorify':
+        elif args.command == Command.GLORIFY:
             repo = tracker.load()
             glory = Glory(args.sourcerer_origin, args.sourcerer_api_origin)
             glory.make(repo)
+        elif args.command == Command.CODE:
+            if args.format == 'md':
+                print(make_md_code(args.user, args.owner, args.repo))
+            elif args.format == 'rst':
+                print(make_rst_code(args.user, args.owner, args.repo))
+
     except Exception as e:
         print('e %s' % str(e))
 

@@ -30,8 +30,6 @@ ListRepoResult = namedtuple(
 
 
 class RepoTracker:
-    KNOWN_BOTS = ['pyup-bot', 'dependabot-bot', 'renovate-bot']
-
     def configure(self, user, owner, repo,
                   sourcerer_api_origin=None,
                   sourcerer_api_secret=None,
@@ -209,15 +207,15 @@ class RepoTracker:
                 break
 
             try:
-                # Chop 'Z' out of the timestamp.
-                commit_date = c['commit']['author']['date'][:-1]
                 author = c['author']['login']
-
-                if author in RepoTracker.KNOWN_BOTS:
+                if self._is_bot(c['author']):
                     print('i Skipping bot commit %s by %s' % (sha, author))
                     continue
 
                 avatars[author] = c['author']['avatar_url']
+
+                # Chop 'Z' out of the timestamp.
+                commit_date = c['commit']['author']['date'][:-1]
 
                 commit = pb.Commit(
                     sha=sha, timestamp=commit_date, username=author)
@@ -248,7 +246,7 @@ class RepoTracker:
 
         for contrib in contributors[:20]:
             username = contrib['login']
-            if username in RepoTracker.KNOWN_BOTS:
+            if self._is_bot(contrib):
                 print('i Skipping bot in top contributors: %s' % username)
                 continue
 
@@ -298,6 +296,13 @@ class RepoTracker:
             data = self._get_json(r)
             for commit in data:
                 yield commit
+
+    def _is_bot(self, github_user_json):
+        author = github_user_json['login']
+        author_type = github_user_json['type']
+
+        KNOWN_BOTS = ['pyup-bot', 'dependabot-bot', 'renovate-bot']
+        return author_type == 'Bot' or author in KNOWN_BOTS
 
     def _format_date(self, date):
         return date.strftime('%Y-%m-%dT%H:%M:%SZ')

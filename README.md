@@ -45,7 +45,7 @@ Hall-of-fame works with Sourcerer (https://sourcerer.io), but it's not required 
 [![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/4)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/4)
 [![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/5)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/5)
 [![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/6)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/6)
-[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/7)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/7) |
+[![](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/images/7)](https://sourcerer.io/fame/yandzee/epicmaxco/vuestic-admin/links/7)
 
 ## Getting started
 

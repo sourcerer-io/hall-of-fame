@@ -301,7 +301,8 @@ class RepoTracker:
         author = github_user_json['login']
         author_type = github_user_json['type']
 
-        KNOWN_BOTS = ['pyup-bot', 'dependabot-bot', 'renovate-bot']
+        KNOWN_BOTS = [
+            'pyup-bot', 'dependabot-bot', 'renovate-bot', 'greenkeeperio-bot']
         return author_type == 'Bot' or author in KNOWN_BOTS
 
     def _format_date(self, date):

@@ -57,7 +57,7 @@ SVG_LEGEND = """
   <g text-anchor="start"
       font-size="30" fill="#4478F3" text-decoration="underline"
       font-family="Roboto,DejaVu Sans,Verdana,Geneva,sans-serif">
-    <text x="112" y="248">source code</text>
+    <text x="190" y="248">about</text>
   </g>
 </svg>
 """

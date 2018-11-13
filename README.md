@@ -75,7 +75,7 @@ Note that Hall-of-fame will use your GitHub token for hourly updates via GitHub 
 
 **Q:** What is the reason to show new, trending, top, in this order?
 
-**A:** We want Hall-of-fame to change frequenty (hence emphasis on changes in the last week), and we want it to be immediately exciting for your first time contributors. You need new contributors, right? We better make them excited.
+**A:** We want Hall-of-fame to change frequently (hence emphasis on changes in the last week), and we want it to be immediately exciting for your first time contributors. You need new contributors, right? We better make them excited.
 
 **Q:** I just commited, and I don't see my face on Hall-of-fame! What is going on?
 

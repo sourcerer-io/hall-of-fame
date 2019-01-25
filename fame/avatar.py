@@ -132,7 +132,7 @@ class AvatarAdorner:
         self._init_sizes()
         self._nest_svg()
         self._make_badge()
-        
+
     def get_avatar_svg(self):
         return ElementTree.tostring(self.svg, encoding='unicode')
 

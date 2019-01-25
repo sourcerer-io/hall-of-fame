@@ -132,7 +132,7 @@ class AvatarAdorner:
         self._init_sizes()
         self._nest_svg()
         self._make_badge()
-
+        
     def get_avatar_svg(self):
         return ElementTree.tostring(self.svg, encoding='unicode')
 
@@ -146,16 +146,17 @@ class AvatarAdorner:
         Browsers don't display referenced images in <img>.
         """
         face_url = self.face_image.get('{http://www.w3.org/1999/xlink}href')
-        BASE64_HEADER = 'data:image/jpeg;base64,'
-        if face_url.startswith(BASE64_HEADER):
+        if face_url.startswith('data:image/'):
             return
         if not face_url.startswith('http'):
             # Relative path.
             face_url = 'https://sourcerer.io' + face_url
 
-        data = urlopen(face_url).read()
+        response = urlopen(face_url)
+        content_type = response.headers.get_content_type()
+        data = response.read()
         encoded = base64.b64encode(data).decode()
-        data_url = BASE64_HEADER + encoded
+        data_url = 'data:%s;base64,%s' % (content_type, encoded)
         self.face_image.set('{http://www.w3.org/1999/xlink}href', data_url)
         print('i Embedded JPEG %s' % face_url)
 

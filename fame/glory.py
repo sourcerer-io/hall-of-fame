@@ -164,7 +164,8 @@ class Glory:
             self.sourcerer_api_origin, ','.join(github_usernames))
 
     def _get_sourcerer_avatar_url(self, sourcerer_username):
-        return '%s/assets/avatar/%s' % (self.sourcerer_origin, sourcerer_username)
+        return '%s/assets/avatar/%s' % (self.sourcerer_origin,
+                                        sourcerer_username)
 
     def _save_svg(self, num, svg):
         image_path = self._get_image_file_path(num, temp=True)
